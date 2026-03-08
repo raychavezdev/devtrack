@@ -1,20 +1,34 @@
-export type Task = {
-  id: number
-  title: string
-  description: string
-  status: string
-  priority: string
-  created_at: string
-}
+import type { Task } from "../types/task"
 
 const API_URL = import.meta.env.VITE_API_URL
 
-export async function getTasks() {
-
+export async function getTasks(): Promise<Task[]> {
   const response = await fetch(`${API_URL}/tasks/`)
 
   if (!response.ok) {
     throw new Error("Failed to fetch tasks")
+  }
+
+  return response.json()
+}
+
+
+export async function createTask(task: {
+  title: string
+  description: string
+  task_type: string
+  priority: string
+}): Promise<Task> {
+  const response = await fetch(`${API_URL}/tasks/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(task),
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to create task")
   }
 
   return response.json()

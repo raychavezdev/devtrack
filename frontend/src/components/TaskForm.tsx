@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createTask } from "../api/tasks"
 
 interface TaskFormProps {
   onTaskCreated: () => void;
@@ -16,22 +17,12 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/tasks/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title,
-          description,
-          task_type: taskType,
-          priority,
-        }),
+      await createTask({
+        title,
+        description,
+        task_type: taskType,
+        priority,
       });
-
-      if (!response.ok) {
-        throw new Error("Error creating task");
-      }
 
       setTitle("");
       setDescription("");
@@ -40,7 +31,7 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
 
       onTaskCreated();
     } catch (error) {
-      console.error(error);
+      console.error("Error creating task:", error);
     } finally {
       setLoading(false);
     }
