@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createTask } from "../api/tasks"
+import { createTask } from "../api/tasks";
 
 interface TaskFormProps {
   onTaskCreated: () => void;
@@ -11,6 +11,7 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
   const [taskType, setTaskType] = useState("feature");
   const [priority, setPriority] = useState("medium");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +24,11 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
         task_type: taskType,
         priority,
       });
+      setSuccess(true);
+
+      setTimeout(() => {
+        setSuccess(false);
+      }, 2000);
 
       setTitle("");
       setDescription("");
@@ -93,6 +99,11 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
       >
         {loading ? "Creating..." : "Create Task"}
       </button>
+      {success && (
+        <div className="mt-4 text-green-400 text-sm">
+          Task created successfully
+        </div>
+      )}
     </form>
   );
 }

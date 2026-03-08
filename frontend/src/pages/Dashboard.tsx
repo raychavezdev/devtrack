@@ -6,15 +6,30 @@ import TaskForm from "../components/TaskForm";
 
 function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchTasks = async () => {
-    const data = await getTasks();
-    setTasks(data);
+    try {
+      const data = await getTasks();
+      setTasks(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchTasks();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-zinc-400 bg-zinc-950">
+        Loading tasks...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -29,6 +44,11 @@ function Dashboard() {
 
         <TaskForm onTaskCreated={fetchTasks} />
 
+        {tasks.length === 0 && (
+          <div className="text-center py-12 text-zinc-400">
+            No tasks yet. Create your first task 🚀
+          </div>
+        )}
         <div className="grid gap-4 md:grid-cols-2">
           {tasks.map((task) => (
             <TaskCard key={task.id} task={task} />
