@@ -6,6 +6,7 @@ import TaskForm from "../components/TaskForm";
 import { DndContext } from "@dnd-kit/core";
 import { useDroppable } from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core";
+import { updateTaskStatus } from "../api/tasks";
 
 type ColumnProps = {
   status: string;
@@ -33,19 +34,26 @@ function Dashboard() {
     );
   }
 
-  function handleDragEnd(event: any) {
+  async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
 
     if (!over) return;
 
-    const taskId = active.id;
-    const newStatus = over.id;
+    const taskId = Number(active.id);
+    const newStatus = over.id as string;
 
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
         task.id === taskId ? { ...task, status: newStatus } : task,
       ),
     );
+
+    try {
+      await updateTaskStatus(taskId, newStatus);
+    } catch (error) {
+      console.error(error);
+      fetchTasks(); // rollback si falla
+    }
   }
 
   const fetchTasks = async () => {
