@@ -1,12 +1,28 @@
-import type { Task } from "../types/task"
+import type { Task } from "../types/task";
+import { useDraggable } from "@dnd-kit/core"
 
 type Props = {
-  task: Task
-}
+  task: Task;
+};
 
 function TaskCard({ task }: Props) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: task.id,
+  });
+
+  const style = {
+    transform: transform
+      ? `translate(${transform.x}px, ${transform.y}px)`
+      : undefined,
+  };
+
   return (
-    <div className="
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      style={style}
+      className="
       bg-zinc-900
       border border-zinc-800
       rounded-xl
@@ -14,40 +30,37 @@ function TaskCard({ task }: Props) {
       transition
       hover:border-zinc-700
       hover:bg-zinc-800
-    ">
+    "
+    >
+      <h3 className="text-lg font-semibold">{task.title}</h3>
 
-      <h3 className="text-lg font-semibold">
-        {task.title}
-      </h3>
-
-      <p className="text-zinc-400 mt-2 text-sm">
-        {task.description}
-      </p>
+      <p className="text-zinc-400 mt-2 text-sm">{task.description}</p>
 
       <div className="flex gap-3 mt-4 text-xs">
-
-        <span className="
+        <span
+          className="
           px-2 py-1
           bg-blue-500/10
           text-blue-400
           rounded-md
-        ">
+        "
+        >
           {task.status}
         </span>
 
-        <span className="
+        <span
+          className="
           px-2 py-1
           bg-purple-500/10
           text-purple-400
           rounded-md
-        ">
+        "
+        >
           {task.priority}
         </span>
-
       </div>
-
     </div>
-  )
+  );
 }
 
-export default TaskCard
+export default TaskCard;

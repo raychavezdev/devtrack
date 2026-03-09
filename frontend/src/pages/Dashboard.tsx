@@ -3,6 +3,15 @@ import TaskCard from "../components/TaskCard";
 import type { Task } from "../types/task";
 import { getTasks } from "../api/tasks";
 import TaskForm from "../components/TaskForm";
+import { DndContext } from "@dnd-kit/core";
+import { useDroppable } from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
+
+type ColumnProps = {
+  status: string;
+  title: string;
+  children: React.ReactNode;
+};
 
 function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -10,6 +19,34 @@ function Dashboard() {
   const pendingTasks = tasks.filter((task) => task.status === "pending");
   const progressTasks = tasks.filter((task) => task.status === "progress");
   const doneTasks = tasks.filter((task) => task.status === "done");
+
+  function Column({ status, title, children }: ColumnProps) {
+    const { setNodeRef } = useDroppable({
+      id: status,
+    });
+
+    return (
+      <div ref={setNodeRef} className="bg-zinc-900 rounded-xl p-4">
+        <h2 className="font-semibold mb-4 text-zinc-300">{title}</h2>
+        <div className="space-y-3">{children}</div>
+      </div>
+    );
+  }
+
+  function handleDragEnd(event: any) {
+    const { active, over } = event;
+
+    if (!over) return;
+
+    const taskId = active.id;
+    const newStatus = over.id;
+
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId ? { ...task, status: newStatus } : task,
+      ),
+    );
+  }
 
   const fetchTasks = async () => {
     try {
@@ -52,41 +89,31 @@ function Dashboard() {
             No tasks yet. Create your first task 🚀
           </div>
         )}
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-zinc-900 rounded-xl p-4">
-            <h2 className="font-semibold mb-4 text-zinc-300">
-              Pending ({pendingTasks.length})
-            </h2>
 
-            <div className="space-y-3">
+        <DndContext onDragEnd={handleDragEnd}>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Column status="pending" title={`Pending (${pendingTasks.length})`}>
               {pendingTasks.map((task) => (
                 <TaskCard key={task.id} task={task} />
               ))}
-            </div>
-          </div>
+            </Column>
 
-          <div className="bg-zinc-900 rounded-xl p-4">
-            <h2 className="font-semibold mb-4 text-zinc-300">
-              In Progress ({progressTasks.length})
-            </h2>
-
-            <div className="space-y-3">
+            <Column
+              status="progress"
+              title={`In Progress (${progressTasks.length})`}
+            >
               {progressTasks.map((task) => (
                 <TaskCard key={task.id} task={task} />
               ))}
-            </div>
-          </div>
+            </Column>
 
-          <div className="bg-zinc-900 rounded-xl p-4">
-            <h2 className="font-semibold mb-4 text-zinc-300">Done ({doneTasks.length})</h2>
-
-            <div className="space-y-3">
+            <Column status="done" title={`Done (${doneTasks.length})`}>
               {doneTasks.map((task) => (
                 <TaskCard key={task.id} task={task} />
               ))}
-            </div>
+            </Column>
           </div>
-        </div>
+        </DndContext>
       </div>
     </div>
   );
