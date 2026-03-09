@@ -7,6 +7,9 @@ import TaskForm from "../components/TaskForm";
 function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const pendingTasks = tasks.filter((task) => task.status === "pending");
+  const progressTasks = tasks.filter((task) => task.status === "progress");
+  const doneTasks = tasks.filter((task) => task.status === "done");
 
   const fetchTasks = async () => {
     try {
@@ -49,10 +52,40 @@ function Dashboard() {
             No tasks yet. Create your first task 🚀
           </div>
         )}
-        <div className="grid gap-4 md:grid-cols-2">
-          {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
-          ))}
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="bg-zinc-900 rounded-xl p-4">
+            <h2 className="font-semibold mb-4 text-zinc-300">
+              Pending ({pendingTasks.length})
+            </h2>
+
+            <div className="space-y-3">
+              {pendingTasks.map((task) => (
+                <TaskCard key={task.id} task={task} />
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-zinc-900 rounded-xl p-4">
+            <h2 className="font-semibold mb-4 text-zinc-300">
+              In Progress ({progressTasks.length})
+            </h2>
+
+            <div className="space-y-3">
+              {progressTasks.map((task) => (
+                <TaskCard key={task.id} task={task} />
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-zinc-900 rounded-xl p-4">
+            <h2 className="font-semibold mb-4 text-zinc-300">Done ({doneTasks.length})</h2>
+
+            <div className="space-y-3">
+              {doneTasks.map((task) => (
+                <TaskCard key={task.id} task={task} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
