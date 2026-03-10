@@ -1,14 +1,15 @@
 import type { Task } from "../types/task";
-import { useDraggable } from "@dnd-kit/core"
+import { useDraggable } from "@dnd-kit/core";
 
 type Props = {
   task: Task;
 };
 
 function TaskCard({ task }: Props) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: task.id,
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: task.id,
+    });
 
   const style = {
     transform: transform
@@ -22,15 +23,16 @@ function TaskCard({ task }: Props) {
       {...listeners}
       {...attributes}
       style={style}
-      className="
-      bg-zinc-900
+      className={`
+    bg-zinc-900
       border border-zinc-800
       rounded-xl
       p-5
       transition
       hover:border-zinc-700
       hover:bg-zinc-800
-    "
+      ${isDragging ? "opacity-40" : ""}
+      `}
     >
       <h3 className="text-lg font-semibold">{task.title}</h3>
 

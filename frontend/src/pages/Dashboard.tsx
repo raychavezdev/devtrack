@@ -3,10 +3,11 @@ import TaskCard from "../components/TaskCard";
 import type { Task } from "../types/task";
 import { getTasks } from "../api/tasks";
 import TaskForm from "../components/TaskForm";
-import { DndContext } from "@dnd-kit/core";
+import { DndContext, DragOverlay  } from "@dnd-kit/core";
 import { useDroppable } from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core";
 import { updateTaskStatus } from "../api/tasks";
+import type { DragStartEvent } from "@dnd-kit/core";
 
 type ColumnProps = {
   status: string;
@@ -20,6 +21,7 @@ function Dashboard() {
   const pendingTasks = tasks.filter((task) => task.status === "pending");
   const progressTasks = tasks.filter((task) => task.status === "progress");
   const doneTasks = tasks.filter((task) => task.status === "done");
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
 
   function Column({ status, title, children }: ColumnProps) {
     const { setNodeRef } = useDroppable({
@@ -32,6 +34,12 @@ function Dashboard() {
         <div className="space-y-3">{children}</div>
       </div>
     );
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    const taskId = Number(event.active.id);
+    const task = tasks.find((t) => t.id === taskId);
+    if (task) setActiveTask(task);
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -54,6 +62,8 @@ function Dashboard() {
       console.error(error);
       fetchTasks(); // rollback si falla
     }
+
+    setActiveTask(null);
   }
 
   const fetchTasks = async () => {
@@ -98,7 +108,7 @@ function Dashboard() {
           </div>
         )}
 
-        <DndContext onDragEnd={handleDragEnd}>
+        <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
           <div className="grid md:grid-cols-3 gap-6">
             <Column status="pending" title={`Pending (${pendingTasks.length})`}>
               {pendingTasks.map((task) => (
@@ -121,6 +131,9 @@ function Dashboard() {
               ))}
             </Column>
           </div>
+          <DragOverlay>
+            {activeTask ? <TaskCard task={activeTask} /> : null}
+          </DragOverlay>
         </DndContext>
       </div>
     </div>
