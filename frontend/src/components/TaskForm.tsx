@@ -95,7 +95,7 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg font-medium transition"
+        className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg font-medium transition cursor-pointer"
       >
         {loading ? "Creating..." : "Create Task"}
       </button>

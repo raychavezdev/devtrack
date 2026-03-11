@@ -35,7 +35,16 @@ function Dashboard() {
   const pendingTasks = tasks.filter((t) => t.status === "pending");
   const progressTasks = tasks.filter((t) => t.status === "progress");
   const doneTasks = tasks.filter((t) => t.status === "done");
-  
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  function openModal() {
+    setIsModalOpen(true);
+  }
+
+  function closeModal() {
+    setIsModalOpen(false);
+  }
 
   function Column({ status, title, children }: ColumnProps) {
     const { setNodeRef } = useDroppable({ id: status });
@@ -87,69 +96,67 @@ function Dashboard() {
     }
   }
 
-  
   async function handleDragEnd(event: DragEndEvent) {
-  const { active, over } = event;
+    const { active, over } = event;
 
-  if (!over) return;
+    if (!over) return;
 
-  const activeId = Number(active.id);
-  const overId = Number(over.id);
+    const activeId = Number(active.id);
+    const overId = Number(over.id);
 
-  const activeIndex = tasks.findIndex((t) => t.id === activeId);
-  const overIndex = tasks.findIndex((t) => t.id === overId);
+    const activeIndex = tasks.findIndex((t) => t.id === activeId);
+    const overIndex = tasks.findIndex((t) => t.id === overId);
 
-  const activeTask = tasks[activeIndex];
-  const overTask = tasks[overIndex];
+    const activeTask = tasks[activeIndex];
+    const overTask = tasks[overIndex];
 
-  if (!activeTask || !overTask) return;
+    if (!activeTask || !overTask) return;
 
-  const newStatus = overTask.status;
+    const newStatus = overTask.status;
 
-  // mover visualmente
-  const newTasks = arrayMove(tasks, activeIndex, overIndex);
+    // mover visualmente
+    const newTasks = arrayMove(tasks, activeIndex, overIndex);
 
-  // actualizar status en el array local
-  newTasks[overIndex] = {
-    ...newTasks[overIndex],
-    status: newStatus,
-  };
-
-  setTasks(newTasks);
-
-  // tareas de la columna destino
-  const columnTasks = newTasks.filter((t) => t.status === newStatus);
-
-  const newIndex = columnTasks.findIndex((t) => t.id === activeId);
-
-  const prevTask = columnTasks[newIndex - 1];
-  const nextTask = columnTasks[newIndex + 1];
-
-  let newPosition;
-
-  if (!prevTask && !nextTask) {
-    newPosition = 1000;
-  } else if (!prevTask) {
-    newPosition = nextTask.position / 2;
-  } else if (!nextTask) {
-    newPosition = prevTask.position + 1000;
-  } else {
-    newPosition = (prevTask.position + nextTask.position) / 2;
-  }
-
-  try {
-    await updateTask(activeId, {
+    // actualizar status en el array local
+    newTasks[overIndex] = {
+      ...newTasks[overIndex],
       status: newStatus,
-      position: newPosition,
-    });
-  } catch (error) {
-    console.error(error);
-    fetchTasks();
+    };
+
+    setTasks(newTasks);
+
+    // tareas de la columna destino
+    const columnTasks = newTasks.filter((t) => t.status === newStatus);
+
+    const newIndex = columnTasks.findIndex((t) => t.id === activeId);
+
+    const prevTask = columnTasks[newIndex - 1];
+    const nextTask = columnTasks[newIndex + 1];
+
+    let newPosition;
+
+    if (!prevTask && !nextTask) {
+      newPosition = 1000;
+    } else if (!prevTask) {
+      newPosition = nextTask.position / 2;
+    } else if (!nextTask) {
+      newPosition = prevTask.position + 1000;
+    } else {
+      newPosition = (prevTask.position + nextTask.position) / 2;
+    }
+
+    try {
+      await updateTask(activeId, {
+        status: newStatus,
+        position: newPosition,
+      });
+    } catch (error) {
+      console.error(error);
+      fetchTasks();
+    }
+
+    setActiveTask(null);
   }
-
-  setActiveTask(null);
-}
-
 
   const fetchTasks = async () => {
     try {
@@ -177,14 +184,46 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="max-w-5xl mx-auto p-8">
-        <header className="mb-10">
-          <h1 className="text-4xl font-bold tracking-tight">DevTrack</h1>
-          <p className="text-zinc-400 mt-2">
-            Manage bugs, improvements and development tasks
-          </p>
+        <header className="mb-10 flex justify-between border-b border-zinc-800 pb-5">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight">DevTrack</h1>
+            <p className="text-zinc-400 mt-2">
+              Manage bugs, improvements and development tasks
+            </p>
+          </div>
+
+          <button
+            onClick={openModal}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition self-end cursor-pointer"
+          >
+            + New Task
+          </button>
         </header>
 
-        <TaskForm onTaskCreated={fetchTasks} />
+        {isModalOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95"
+            onClick={closeModal} 
+          >
+            <div
+              className="bg-zinc-900 p-6 rounded-xl w-full max-w-md relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={closeModal}
+                className="absolute top-3 right-3 text-zinc-400 hover:text-zinc-200 cursor-pointer"
+              >
+                ✕
+              </button>
+              <TaskForm
+                onTaskCreated={() => {
+                  fetchTasks();
+                  closeModal();
+                }}
+              />
+            </div>
+          </div>
+        )}
 
         {tasks.length === 0 && (
           <div className="text-center py-12 text-zinc-400">
