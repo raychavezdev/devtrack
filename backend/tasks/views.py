@@ -4,6 +4,5 @@ from .serializers import TaskSerializer
 
 
 class TaskViewSet(viewsets.ModelViewSet):
-
-    queryset = Task.objects.all().order_by("-created_at")
+    queryset = Task.objects.all().order_by("status", "position")
     serializer_class = TaskSerializer

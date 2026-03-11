@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import TaskCard from "../components/TaskCard";
 import type { Task } from "../types/task";
-import { getTasks, updateTaskStatus } from "../api/tasks";
+import { getTasks, updateTask } from "../api/tasks";
 import TaskForm from "../components/TaskForm";
 
 import {
@@ -35,6 +35,7 @@ function Dashboard() {
   const pendingTasks = tasks.filter((t) => t.status === "pending");
   const progressTasks = tasks.filter((t) => t.status === "progress");
   const doneTasks = tasks.filter((t) => t.status === "done");
+  
 
   function Column({ status, title, children }: ColumnProps) {
     const { setNodeRef } = useDroppable({ id: status });
@@ -80,43 +81,75 @@ function Dashboard() {
     if (newStatus !== activeTask.status) {
       setTasks((prev) =>
         prev.map((task) =>
-          task.id === activeId ? { ...task, status: newStatus } : task
-        )
+          task.id === activeId ? { ...task, status: newStatus } : task,
+        ),
       );
     }
   }
 
+  
   async function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
+  const { active, over } = event;
 
-    if (!over) return;
+  if (!over) return;
 
-    const activeId = Number(active.id);
-    const overId = Number(over.id);
+  const activeId = Number(active.id);
+  const overId = Number(over.id);
 
-    const activeIndex = tasks.findIndex((t) => t.id === activeId);
-    const overIndex = tasks.findIndex((t) => t.id === overId);
+  const activeIndex = tasks.findIndex((t) => t.id === activeId);
+  const overIndex = tasks.findIndex((t) => t.id === overId);
 
-    const activeTask = tasks[activeIndex];
-    const overTask = tasks.find((t) => t.id === overId);
+  const activeTask = tasks[activeIndex];
+  const overTask = tasks[overIndex];
 
-    if (!activeTask) return;
+  if (!activeTask || !overTask) return;
 
-    // reorder dentro de misma columna
-    if (overTask && activeTask.status === overTask.status) {
-      setTasks((tasks) => arrayMove(tasks, activeIndex, overIndex));
-    }
+  const newStatus = overTask.status;
 
-    // cambio en backend
-    try {
-      await updateTaskStatus(activeId, activeTask.status);
-    } catch (error) {
-      console.error(error);
-      fetchTasks();
-    }
+  // mover visualmente
+  const newTasks = arrayMove(tasks, activeIndex, overIndex);
 
-    setActiveTask(null);
+  // actualizar status en el array local
+  newTasks[overIndex] = {
+    ...newTasks[overIndex],
+    status: newStatus,
+  };
+
+  setTasks(newTasks);
+
+  // tareas de la columna destino
+  const columnTasks = newTasks.filter((t) => t.status === newStatus);
+
+  const newIndex = columnTasks.findIndex((t) => t.id === activeId);
+
+  const prevTask = columnTasks[newIndex - 1];
+  const nextTask = columnTasks[newIndex + 1];
+
+  let newPosition;
+
+  if (!prevTask && !nextTask) {
+    newPosition = 1000;
+  } else if (!prevTask) {
+    newPosition = nextTask.position / 2;
+  } else if (!nextTask) {
+    newPosition = prevTask.position + 1000;
+  } else {
+    newPosition = (prevTask.position + nextTask.position) / 2;
   }
+
+  try {
+    await updateTask(activeId, {
+      status: newStatus,
+      position: newPosition,
+    });
+  } catch (error) {
+    console.error(error);
+    fetchTasks();
+  }
+
+  setActiveTask(null);
+}
+
 
   const fetchTasks = async () => {
     try {
