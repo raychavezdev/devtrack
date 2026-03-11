@@ -203,7 +203,7 @@ function Dashboard() {
         {isModalOpen && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95"
-            onClick={closeModal} 
+            onClick={closeModal}
           >
             <div
               className="bg-zinc-900 p-6 rounded-xl w-full max-w-md relative"
@@ -243,7 +243,13 @@ function Dashboard() {
                 strategy={verticalListSortingStrategy}
               >
                 {pendingTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} />
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onTaskDeleted={(id) =>
+                      setTasks((prev) => prev.filter((t) => t.id !== id))
+                    }
+                  />
                 ))}
               </SortableContext>
             </Column>
@@ -257,7 +263,13 @@ function Dashboard() {
                 strategy={verticalListSortingStrategy}
               >
                 {progressTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} />
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onTaskDeleted={(id) =>
+                      setTasks((prev) => prev.filter((t) => t.id !== id))
+                    }
+                  />
                 ))}
               </SortableContext>
             </Column>
@@ -268,14 +280,27 @@ function Dashboard() {
                 strategy={verticalListSortingStrategy}
               >
                 {doneTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} />
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onTaskDeleted={(id) =>
+                      setTasks((prev) => prev.filter((t) => t.id !== id))
+                    }
+                  />
                 ))}
               </SortableContext>
             </Column>
           </div>
 
           <DragOverlay>
-            {activeTask ? <TaskCard task={activeTask} /> : null}
+            {activeTask ? (
+              <TaskCard
+                task={activeTask}
+                onTaskDeleted={(id) =>
+                  setTasks((prev) => prev.filter((t) => t.id !== id))
+                }
+              />
+            ) : null}
           </DragOverlay>
         </DndContext>
       </div>

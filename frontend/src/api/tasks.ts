@@ -34,8 +34,6 @@ export async function createTask(task: {
   return response.json()
 }
 
-
-
 export async function updateTask(
   id: number,
   data: {
@@ -56,4 +54,17 @@ export async function updateTask(
   }
 
   return response.json()
+}
+
+
+export async function deleteTask(id: number) {
+  const response = await fetch(`${API_URL}/tasks/${id}/`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete task");
+  }
+
+  return true;
 }

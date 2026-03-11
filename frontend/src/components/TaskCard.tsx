@@ -1,20 +1,41 @@
 import type { Task } from "../types/task";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { deleteTask } from "../api/tasks";
 
 type Props = {
   task: Task;
+  onTaskDeleted?: (id: number) => void;
 };
 
-function TaskCard({ task }: Props) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({
-      id: task.id,
-    });
+function TaskCard({ task, onTaskDeleted }: Props) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: task.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+  };
+
+  const handleDelete = async () => {
+    console.log("handleDelete");
+    if (!confirm("Are you sure you want to delete this task?")) return;
+
+    try {
+      await deleteTask(task.id);
+      if (onTaskDeleted) onTaskDeleted(task.id);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete task");
+    }
   };
 
   return (
@@ -25,12 +46,13 @@ function TaskCard({ task }: Props) {
       style={style}
       className={`
     bg-zinc-900
-      border border-zinc-800
+      border border-zinc-700
       rounded-xl
       p-5
+      cursor-pointer
+      hover:shadow-lg
+    hover:border-blue-400 
       transition
-      hover:border-zinc-700
-      hover:bg-zinc-800
       ${isDragging ? "opacity-40" : ""}
       `}
     >
@@ -60,6 +82,16 @@ function TaskCard({ task }: Props) {
         >
           {task.priority}
         </span>
+      </div>
+
+      <div className="border-t border-zinc-800 mt-3 flex justify-end">
+        <button
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={handleDelete}
+          className="text-xs mt-2 text-gray-400 hover:text-red-400"
+        >
+          Delete
+        </button>
       </div>
     </div>
   );
