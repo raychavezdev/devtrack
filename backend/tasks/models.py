@@ -34,7 +34,8 @@ class Task(models.Model):
         choices=STATUS_CHOICES,
         default="pending",
     )
-
+    
+    position = models.FloatField(default=1000)
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
