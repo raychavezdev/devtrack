@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
 import TaskCard from "../components/TaskCard";
 import type { Task } from "../types/task";
-import { getTasks } from "../api/tasks";
+import { getTasks, updateTaskStatus } from "../api/tasks";
 import TaskForm from "../components/TaskForm";
-import { DndContext, DragOverlay  } from "@dnd-kit/core";
-import { useDroppable } from "@dnd-kit/core";
-import type { DragEndEvent } from "@dnd-kit/core";
-import { updateTaskStatus } from "../api/tasks";
-import type { DragStartEvent } from "@dnd-kit/core";
+
+import {
+  DndContext,
+  DragOverlay,
+  useDroppable,
+  type DragStartEvent,
+  type DragOverEvent,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
 
 type ColumnProps = {
   status: string;
@@ -15,18 +25,19 @@ type ColumnProps = {
   children: React.ReactNode;
 };
 
+const columns = ["pending", "progress", "done"];
+
 function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const pendingTasks = tasks.filter((task) => task.status === "pending");
-  const progressTasks = tasks.filter((task) => task.status === "progress");
-  const doneTasks = tasks.filter((task) => task.status === "done");
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const pendingTasks = tasks.filter((t) => t.status === "pending");
+  const progressTasks = tasks.filter((t) => t.status === "progress");
+  const doneTasks = tasks.filter((t) => t.status === "done");
 
   function Column({ status, title, children }: ColumnProps) {
-    const { setNodeRef } = useDroppable({
-      id: status,
-    });
+    const { setNodeRef } = useDroppable({ id: status });
 
     return (
       <div ref={setNodeRef} className="bg-zinc-900 rounded-xl p-4">
@@ -37,9 +48,42 @@ function Dashboard() {
   }
 
   function handleDragStart(event: DragStartEvent) {
-    const taskId = Number(event.active.id);
-    const task = tasks.find((t) => t.id === taskId);
+    const id = Number(event.active.id);
+    const task = tasks.find((t) => t.id === id);
+
     if (task) setActiveTask(task);
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    const { active, over } = event;
+
+    if (!over) return;
+
+    const activeId = Number(active.id);
+    const overId = over.id;
+
+    const activeIndex = tasks.findIndex((t) => t.id === activeId);
+    const activeTask = tasks[activeIndex];
+
+    if (!activeTask) return;
+
+    const overTask = tasks.find((t) => t.id === Number(overId));
+
+    let newStatus = activeTask.status;
+
+    if (columns.includes(String(overId))) {
+      newStatus = String(overId);
+    } else if (overTask) {
+      newStatus = overTask.status;
+    }
+
+    if (newStatus !== activeTask.status) {
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === activeId ? { ...task, status: newStatus } : task
+        )
+      );
+    }
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -47,20 +91,28 @@ function Dashboard() {
 
     if (!over) return;
 
-    const taskId = Number(active.id);
-    const newStatus = over.id as string;
+    const activeId = Number(active.id);
+    const overId = Number(over.id);
 
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task,
-      ),
-    );
+    const activeIndex = tasks.findIndex((t) => t.id === activeId);
+    const overIndex = tasks.findIndex((t) => t.id === overId);
 
+    const activeTask = tasks[activeIndex];
+    const overTask = tasks.find((t) => t.id === overId);
+
+    if (!activeTask) return;
+
+    // reorder dentro de misma columna
+    if (overTask && activeTask.status === overTask.status) {
+      setTasks((tasks) => arrayMove(tasks, activeIndex, overIndex));
+    }
+
+    // cambio en backend
     try {
-      await updateTaskStatus(taskId, newStatus);
+      await updateTaskStatus(activeId, activeTask.status);
     } catch (error) {
       console.error(error);
-      fetchTasks(); // rollback si falla
+      fetchTasks();
     }
 
     setActiveTask(null);
@@ -94,7 +146,6 @@ function Dashboard() {
       <div className="max-w-5xl mx-auto p-8">
         <header className="mb-10">
           <h1 className="text-4xl font-bold tracking-tight">DevTrack</h1>
-
           <p className="text-zinc-400 mt-2">
             Manage bugs, improvements and development tasks
           </p>
@@ -108,29 +159,49 @@ function Dashboard() {
           </div>
         )}
 
-        <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
+        <DndContext
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
           <div className="grid md:grid-cols-3 gap-6">
             <Column status="pending" title={`Pending (${pendingTasks.length})`}>
-              {pendingTasks.map((task) => (
-                <TaskCard key={task.id} task={task} />
-              ))}
+              <SortableContext
+                items={pendingTasks.map((t) => t.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {pendingTasks.map((task) => (
+                  <TaskCard key={task.id} task={task} />
+                ))}
+              </SortableContext>
             </Column>
 
             <Column
               status="progress"
               title={`In Progress (${progressTasks.length})`}
             >
-              {progressTasks.map((task) => (
-                <TaskCard key={task.id} task={task} />
-              ))}
+              <SortableContext
+                items={progressTasks.map((t) => t.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {progressTasks.map((task) => (
+                  <TaskCard key={task.id} task={task} />
+                ))}
+              </SortableContext>
             </Column>
 
             <Column status="done" title={`Done (${doneTasks.length})`}>
-              {doneTasks.map((task) => (
-                <TaskCard key={task.id} task={task} />
-              ))}
+              <SortableContext
+                items={doneTasks.map((t) => t.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {doneTasks.map((task) => (
+                  <TaskCard key={task.id} task={task} />
+                ))}
+              </SortableContext>
             </Column>
           </div>
+
           <DragOverlay>
             {activeTask ? <TaskCard task={activeTask} /> : null}
           </DragOverlay>
