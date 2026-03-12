@@ -6,9 +6,11 @@ import { deleteTask } from "../api/tasks";
 type Props = {
   task: Task;
   onTaskDeleted?: (id: number) => void;
+  onEdit?: (task: Task) => void;
 };
 
-function TaskCard({ task, onTaskDeleted }: Props) {
+
+function TaskCard({ task, onTaskDeleted, onEdit }: Props) {
   const {
     attributes,
     listeners,
@@ -26,7 +28,6 @@ function TaskCard({ task, onTaskDeleted }: Props) {
   };
 
   const handleDelete = async () => {
-    console.log("handleDelete");
     if (!confirm("Are you sure you want to delete this task?")) return;
 
     try {
@@ -37,6 +38,8 @@ function TaskCard({ task, onTaskDeleted }: Props) {
       alert("Failed to delete task");
     }
   };
+
+
 
   return (
     <div
@@ -49,7 +52,7 @@ function TaskCard({ task, onTaskDeleted }: Props) {
       border border-zinc-700
       rounded-xl
       p-5
-      cursor-pointer
+      cursor-grab
       hover:shadow-lg
     hover:border-blue-400 
       transition
@@ -84,11 +87,18 @@ function TaskCard({ task, onTaskDeleted }: Props) {
         </span>
       </div>
 
-      <div className="border-t border-zinc-800 mt-3 flex justify-end">
+      <div className="border-t border-zinc-800 mt-3  flex justify-end ">
+        <button
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => onEdit?.(task)}
+          className="p-1 text-xs text-blue-300 hover:text-blue-500"
+        >
+          Edit
+        </button>
         <button
           onPointerDown={(e) => e.stopPropagation()}
           onClick={handleDelete}
-          className="text-xs mt-2 text-gray-400 hover:text-red-400"
+          className="p-1 text-xs  text-gray-400 hover:text-red-400 cursor-pointer"
         >
           Delete
         </button>

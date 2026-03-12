@@ -56,6 +56,29 @@ export async function updateTask(
   return response.json()
 }
 
+export async function editTask(
+  id: number,
+  data: {
+    title: string
+    description: string
+    task_type: string
+    priority: string
+  }
+) {
+  const response = await fetch(`${API_URL}/tasks/${id}/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to edit task")
+  }
+
+  return response.json()
+}
 
 export async function deleteTask(id: number) {
   const response = await fetch(`${API_URL}/tasks/${id}/`, {

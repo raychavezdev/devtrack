@@ -37,6 +37,9 @@ function Dashboard() {
   const doneTasks = tasks.filter((t) => t.status === "done");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   function openModal() {
     setIsModalOpen(true);
@@ -173,6 +176,16 @@ function Dashboard() {
     fetchTasks();
   }, []);
 
+  useEffect(() => {
+  if (!successMessage) return;
+
+  const timer = setTimeout(() => {
+    setSuccessMessage(null);
+  }, 2000);
+
+  return () => clearTimeout(timer);
+}, [successMessage]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-zinc-400 bg-zinc-950">
@@ -200,30 +213,13 @@ function Dashboard() {
           </button>
         </header>
 
-        {isModalOpen && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95"
-            onClick={closeModal}
-          >
-            <div
-              className="bg-zinc-900 p-6 rounded-xl w-full max-w-md relative"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={closeModal}
-                className="absolute top-3 right-3 text-zinc-400 hover:text-zinc-200 cursor-pointer"
-              >
-                ✕
-              </button>
-              <TaskForm
-                onTaskCreated={() => {
-                  fetchTasks();
-                  closeModal();
-                }}
-              />
-            </div>
+
+        {successMessage && (
+          <div className="-mt-6 mb-4 p-3 rounded-lg bg-green-500/10 text-green-400 text-sm">
+            {successMessage}
           </div>
         )}
+
 
         {tasks.length === 0 && (
           <div className="text-center py-12 text-zinc-400">
@@ -249,6 +245,10 @@ function Dashboard() {
                     onTaskDeleted={(id) =>
                       setTasks((prev) => prev.filter((t) => t.id !== id))
                     }
+                    onEdit={() => {
+                      setEditingTask(task);
+                      openModal();
+                    }}
                   />
                 ))}
               </SortableContext>
@@ -269,6 +269,10 @@ function Dashboard() {
                     onTaskDeleted={(id) =>
                       setTasks((prev) => prev.filter((t) => t.id !== id))
                     }
+                    onEdit={() => {
+                      setEditingTask(task);
+                      openModal();
+                    }}
                   />
                 ))}
               </SortableContext>
@@ -286,6 +290,10 @@ function Dashboard() {
                     onTaskDeleted={(id) =>
                       setTasks((prev) => prev.filter((t) => t.id !== id))
                     }
+                    onEdit={() => {
+                      setEditingTask(task);
+                      openModal();
+                    }}
                   />
                 ))}
               </SortableContext>
@@ -293,17 +301,42 @@ function Dashboard() {
           </div>
 
           <DragOverlay>
-            {activeTask ? (
-              <TaskCard
-                task={activeTask}
-                onTaskDeleted={(id) =>
-                  setTasks((prev) => prev.filter((t) => t.id !== id))
-                }
-              />
-            ) : null}
+            {activeTask ? <TaskCard task={activeTask} /> : null}
           </DragOverlay>
         </DndContext>
       </div>
+
+
+
+
+         {isModalOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95"
+            onClick={closeModal}
+          >
+            <div
+              className="bg-zinc-900 p-6 rounded-xl w-full max-w-md relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={closeModal}
+                className="absolute top-3 right-3 text-zinc-400 hover:text-zinc-200 cursor-pointer"
+              >
+                ✕
+              </button>
+
+              <TaskForm
+                task={editingTask}
+                onTaskSaved={(message) => {
+                  fetchTasks();
+                  setSuccessMessage(message);
+                  closeModal();
+                }}
+              />
+            </div>
+          </div>
+        )}
+
     </div>
   );
 }
