@@ -1,16 +1,15 @@
 import type { Task } from "../types/task";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { deleteTask } from "../api/tasks";
 
 type Props = {
   task: Task;
-  onTaskDeleted?: (id: number) => void;
+  onDelete?: (task: Task) => void;
   onEdit?: (task: Task) => void;
 };
 
 
-function TaskCard({ task, onTaskDeleted, onEdit }: Props) {
+function TaskCard({ task, onDelete, onEdit }: Props) {
   const {
     attributes,
     listeners,
@@ -26,19 +25,6 @@ function TaskCard({ task, onTaskDeleted, onEdit }: Props) {
     transform: CSS.Transform.toString(transform),
     transition,
   };
-
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this task?")) return;
-
-    try {
-      await deleteTask(task.id);
-      if (onTaskDeleted) onTaskDeleted(task.id);
-    } catch (error) {
-      console.error(error);
-      alert("Failed to delete task");
-    }
-  };
-
 
 
   return (
@@ -97,7 +83,7 @@ function TaskCard({ task, onTaskDeleted, onEdit }: Props) {
         </button>
         <button
           onPointerDown={(e) => e.stopPropagation()}
-          onClick={handleDelete}
+          onClick={() => onDelete?.(task)}
           className="p-1 text-xs  text-gray-400 hover:text-red-400 cursor-pointer"
         >
           Delete

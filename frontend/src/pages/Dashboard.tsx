@@ -3,6 +3,7 @@ import TaskCard from "../components/TaskCard";
 import type { Task } from "../types/task";
 import { getTasks, updateTask } from "../api/tasks";
 import TaskForm from "../components/TaskForm";
+import { deleteTask } from "../api/tasks";
 
 import {
   DndContext,
@@ -31,15 +32,14 @@ function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const pendingTasks = tasks.filter((t) => t.status === "pending");
   const progressTasks = tasks.filter((t) => t.status === "progress");
   const doneTasks = tasks.filter((t) => t.status === "done");
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   function openModal() {
     setIsModalOpen(true);
@@ -172,19 +172,34 @@ function Dashboard() {
     }
   };
 
+  async function confirmDelete() {
+    if (!taskToDelete) return;
+
+    try {
+      await deleteTask(taskToDelete.id);
+
+      setTasks((prev) => prev.filter((t) => t.id !== taskToDelete.id));
+      setTaskToDelete(null);
+
+      setSuccessMessage("Task deleted successfully");
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   useEffect(() => {
     fetchTasks();
   }, []);
 
   useEffect(() => {
-  if (!successMessage) return;
+    if (!successMessage) return;
 
-  const timer = setTimeout(() => {
-    setSuccessMessage(null);
-  }, 2000);
+    const timer = setTimeout(() => {
+      setSuccessMessage(null);
+    }, 2000);
 
-  return () => clearTimeout(timer);
-}, [successMessage]);
+    return () => clearTimeout(timer);
+  }, [successMessage]);
 
   if (loading) {
     return (
@@ -213,13 +228,11 @@ function Dashboard() {
           </button>
         </header>
 
-
         {successMessage && (
           <div className="-mt-6 mb-4 p-3 rounded-lg bg-green-500/10 text-green-400 text-sm">
             {successMessage}
           </div>
         )}
-
 
         {tasks.length === 0 && (
           <div className="text-center py-12 text-zinc-400">
@@ -242,9 +255,7 @@ function Dashboard() {
                   <TaskCard
                     key={task.id}
                     task={task}
-                    onTaskDeleted={(id) =>
-                      setTasks((prev) => prev.filter((t) => t.id !== id))
-                    }
+                    onDelete={(task) => setTaskToDelete(task)}
                     onEdit={() => {
                       setEditingTask(task);
                       openModal();
@@ -266,9 +277,7 @@ function Dashboard() {
                   <TaskCard
                     key={task.id}
                     task={task}
-                    onTaskDeleted={(id) =>
-                      setTasks((prev) => prev.filter((t) => t.id !== id))
-                    }
+                    onDelete={(task) => setTaskToDelete(task)}
                     onEdit={() => {
                       setEditingTask(task);
                       openModal();
@@ -287,9 +296,7 @@ function Dashboard() {
                   <TaskCard
                     key={task.id}
                     task={task}
-                    onTaskDeleted={(id) =>
-                      setTasks((prev) => prev.filter((t) => t.id !== id))
-                    }
+                    onDelete={(task) => setTaskToDelete(task)}
                     onEdit={() => {
                       setEditingTask(task);
                       openModal();
@@ -306,37 +313,71 @@ function Dashboard() {
         </DndContext>
       </div>
 
-
-
-
-         {isModalOpen && (
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95"
+          onClick={closeModal}
+        >
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95"
-            onClick={closeModal}
+            className="bg-zinc-900 p-6 rounded-xl w-full max-w-md relative"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div
-              className="bg-zinc-900 p-6 rounded-xl w-full max-w-md relative"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              onClick={closeModal}
+              className="absolute top-3 right-3 text-zinc-400 hover:text-zinc-200 cursor-pointer"
             >
+              ✕
+            </button>
+
+            <TaskForm
+              task={editingTask}
+              onTaskSaved={(message) => {
+                fetchTasks();
+                setSuccessMessage(message);
+                closeModal();
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {taskToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95"
+          onClick={() => setTaskToDelete(null)}
+        >
+          <div
+            className="bg-zinc-900 p-6 rounded-xl w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold mb-3">Delete Task</h2>
+
+            <p className="text-zinc-400 text-sm mb-6">
+              Are you sure you want to delete{" "}
+              <span className="text-zinc-200 font-medium">
+                {taskToDelete.title}
+              </span>
+              ?
+            </p>
+
+            <div className="flex justify-end gap-3">
               <button
-                onClick={closeModal}
-                className="absolute top-3 right-3 text-zinc-400 hover:text-zinc-200 cursor-pointer"
+                onClick={() => setTaskToDelete(null)}
+                className="px-3 py-1.5 text-sm bg-zinc-700 rounded hover:bg-zinc-600"
               >
-                ✕
+                Cancel
               </button>
 
-              <TaskForm
-                task={editingTask}
-                onTaskSaved={(message) => {
-                  fetchTasks();
-                  setSuccessMessage(message);
-                  closeModal();
-                }}
-              />
+              <button
+                onClick={confirmDelete}
+                className="px-3 py-1.5 text-sm bg-red-500 rounded hover:bg-red-600"
+              >
+                Delete
+              </button>
             </div>
           </div>
-        )}
-
+        </div>
+      )}
     </div>
   );
 }
