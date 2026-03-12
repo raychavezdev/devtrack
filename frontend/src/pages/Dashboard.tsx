@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import TaskCard from "../components/TaskCard";
 import type { Task } from "../types/task";
 import { getTasks, updateTask } from "../api/tasks";
-import TaskForm from "../components/TaskForm";
 import { deleteTask } from "../api/tasks";
 
 import {
@@ -19,6 +18,8 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
+import TaskModal from "../components/TaskModal";
+import ConfirmModal from "../components/ConfirmModal";
 
 type ColumnProps = {
   status: string;
@@ -41,12 +42,18 @@ function Dashboard() {
   const progressTasks = tasks.filter((t) => t.status === "progress");
   const doneTasks = tasks.filter((t) => t.status === "done");
 
-  function openModal() {
+  function openCreateModal() {
+    setEditingTask(null);
     setIsModalOpen(true);
   }
 
+  function openEditModal(task: Task) {
+    setEditingTask(task);
+    setIsModalOpen(true);
+  }
   function closeModal() {
     setIsModalOpen(false);
+    setEditingTask(null);
   }
 
   function Column({ status, title, children }: ColumnProps) {
@@ -221,7 +228,7 @@ function Dashboard() {
           </div>
 
           <button
-            onClick={openModal}
+            onClick={openCreateModal}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition self-end cursor-pointer"
           >
             + New Task
@@ -256,10 +263,7 @@ function Dashboard() {
                     key={task.id}
                     task={task}
                     onDelete={(task) => setTaskToDelete(task)}
-                    onEdit={() => {
-                      setEditingTask(task);
-                      openModal();
-                    }}
+                    onEdit={(task) => openEditModal(task)}
                   />
                 ))}
               </SortableContext>
@@ -278,10 +282,7 @@ function Dashboard() {
                     key={task.id}
                     task={task}
                     onDelete={(task) => setTaskToDelete(task)}
-                    onEdit={() => {
-                      setEditingTask(task);
-                      openModal();
-                    }}
+                    onEdit={(task) => openEditModal(task)}
                   />
                 ))}
               </SortableContext>
@@ -297,10 +298,7 @@ function Dashboard() {
                     key={task.id}
                     task={task}
                     onDelete={(task) => setTaskToDelete(task)}
-                    onEdit={() => {
-                      setEditingTask(task);
-                      openModal();
-                    }}
+                    onEdit={(task) => openEditModal(task)}
                   />
                 ))}
               </SortableContext>
@@ -313,71 +311,24 @@ function Dashboard() {
         </DndContext>
       </div>
 
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95"
-          onClick={closeModal}
-        >
-          <div
-            className="bg-zinc-900 p-6 rounded-xl w-full max-w-md relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={closeModal}
-              className="absolute top-3 right-3 text-zinc-400 hover:text-zinc-200 cursor-pointer"
-            >
-              ✕
-            </button>
+      <TaskModal
+        isOpen={isModalOpen}
+        task={editingTask}
+        onClose={closeModal}
+        onSaved={(message) => {
+          fetchTasks();
+          setSuccessMessage(message);
+        }}
+      />
 
-            <TaskForm
-              task={editingTask}
-              onTaskSaved={(message) => {
-                fetchTasks();
-                setSuccessMessage(message);
-                closeModal();
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-      {taskToDelete && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95"
-          onClick={() => setTaskToDelete(null)}
-        >
-          <div
-            className="bg-zinc-900 p-6 rounded-xl w-full max-w-sm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-lg font-semibold mb-3">Delete Task</h2>
-
-            <p className="text-zinc-400 text-sm mb-6">
-              Are you sure you want to delete{" "}
-              <span className="text-zinc-200 font-medium">
-                {taskToDelete.title}
-              </span>
-              ?
-            </p>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setTaskToDelete(null)}
-                className="px-3 py-1.5 text-sm bg-zinc-700 rounded hover:bg-zinc-600"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={confirmDelete}
-                className="px-3 py-1.5 text-sm bg-red-500 rounded hover:bg-red-600"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={!!taskToDelete}
+        title="Delete Task"
+        message={`Are you sure you want to delete "${taskToDelete?.title}"?`}
+        confirmText="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setTaskToDelete(null)}
+      />
     </div>
   );
 }

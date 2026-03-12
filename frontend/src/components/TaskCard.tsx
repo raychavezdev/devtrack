@@ -77,7 +77,7 @@ function TaskCard({ task, onDelete, onEdit }: Props) {
         <button
           onPointerDown={(e) => e.stopPropagation()}
           onClick={() => onEdit?.(task)}
-          className="p-1 text-xs text-blue-300 hover:text-blue-500"
+          className="p-1 text-xs text-blue-300 hover:text-blue-500 cursor-pointer"
         >
           Edit
         </button>
