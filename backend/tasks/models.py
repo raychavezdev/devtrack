@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.auth.models import User
 
 class Task(models.Model):
 
@@ -25,17 +25,19 @@ class Task(models.Model):
 
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-
     task_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
-
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default="pending",
     )
-    
     position = models.FloatField(default=1000)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="tasks"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
