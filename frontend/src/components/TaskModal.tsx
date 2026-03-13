@@ -8,7 +8,7 @@ type Props = {
   onSaved: (message: string) => void;
 };
 
-function TaskModal({ isOpen, task, onClose, onSaved }: Props) {
+export default function TaskModal({ isOpen, task, onClose, onSaved }: Props) {
   if (!isOpen) return null;
 
   return (
@@ -39,4 +39,3 @@ function TaskModal({ isOpen, task, onClose, onSaved }: Props) {
   );
 }
 
-export default TaskModal;

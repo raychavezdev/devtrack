@@ -8,7 +8,7 @@ type Props = {
   onCancel: () => void;
 };
 
-function ConfirmModal({
+export default function ConfirmModal({
   isOpen,
   title,
   message,
@@ -51,5 +51,3 @@ function ConfirmModal({
     </div>
   );
 }
-
-export default ConfirmModal;

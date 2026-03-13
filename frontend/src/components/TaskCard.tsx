@@ -9,7 +9,7 @@ type Props = {
 };
 
 
-function TaskCard({ task, onDelete, onEdit }: Props) {
+export default function TaskCard({ task, onDelete, onEdit }: Props) {
   const {
     attributes,
     listeners,
@@ -92,5 +92,3 @@ function TaskCard({ task, onDelete, onEdit }: Props) {
     </div>
   );
 }
-
-export default TaskCard;

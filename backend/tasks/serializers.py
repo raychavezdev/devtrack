@@ -9,6 +9,7 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = "__all__"
+        read_only_fields = ["user"]
 
     def create(self, validated_data):
         status = validated_data.get("status", "pending")
