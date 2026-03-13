@@ -3,6 +3,8 @@ import TaskCard from "../components/TaskCard";
 import type { Task } from "../types/task";
 import { getTasks, updateTask } from "../api/tasks";
 import { deleteTask } from "../api/tasks";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 import {
   DndContext,
@@ -36,11 +38,23 @@ function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
-
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [confirmLogout, setConfirmLogout] = useState(false);
+
   const pendingTasks = tasks.filter((t) => t.status === "pending");
   const progressTasks = tasks.filter((t) => t.status === "progress");
   const doneTasks = tasks.filter((t) => t.status === "done");
+
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  function confirmLogoutAction() {
+    logout();
+    navigate("/login");
+  }
+  function handleLogout() {
+    setConfirmLogout(true);
+  }
 
   function openCreateModal() {
     setEditingTask(null);
@@ -227,12 +241,21 @@ function Dashboard() {
             </p>
           </div>
 
-          <button
-            onClick={openCreateModal}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition self-end cursor-pointer"
-          >
-            + New Task
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleLogout}
+              className="px-3 py-2 text-sm bg-zinc-800 hover:bg-zinc-700 rounded-lg transition"
+            >
+              Logout
+            </button>
+
+            <button
+              onClick={openCreateModal}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition cursor-pointer"
+            >
+              + New Task
+            </button>
+          </div>
         </header>
 
         {successMessage && (
@@ -328,6 +351,15 @@ function Dashboard() {
         confirmText="Delete"
         onConfirm={confirmDelete}
         onCancel={() => setTaskToDelete(null)}
+      />
+
+      <ConfirmModal
+        isOpen={confirmLogout}
+        title="Logout"
+        message="Are you sure you want to log out?"
+        confirmText="Logout"
+        onConfirm={confirmLogoutAction}
+        onCancel={() => setConfirmLogout(false)}
       />
     </div>
   );
