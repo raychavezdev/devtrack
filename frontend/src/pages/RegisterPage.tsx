@@ -8,21 +8,63 @@ export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  function validateForm() {
+    const newErrors: Record<string, string> = {};
+
+    if (username.trim().length < 3) {
+      newErrors.username = "Username must be at least 3 characters";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    return newErrors;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setError(null);
+    const validationErrors = validateForm();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setErrors({});
     setLoading(true);
 
     try {
       await registerRequest(username, email, password);
       navigate("/login");
-    } catch {
-      setError("Failed to create account. Please try again.");
+    } catch (err: any) {
+      const backendErrors: Record<string, string> = {};
+
+      if (err.username) backendErrors.username = err.username[0];
+      if (err.email) backendErrors.email = err.email[0];
+      if (err.password) backendErrors.password = err.password[0];
+
+      if (Object.keys(backendErrors).length > 0) {
+        setErrors(backendErrors);
+      } else {
+        setErrors({ general: "Failed to register" });
+      }
     } finally {
       setLoading(false);
     }
@@ -30,9 +72,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-zinc-100">
-
       <div className="w-full max-w-md">
-
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold tracking-tight">DevTrack</h1>
           <p className="text-zinc-400 mt-2 text-sm">
@@ -48,14 +88,14 @@ export default function RegisterPage() {
             Create Account
           </h2>
 
-          {error && (
+          {errors.general && (
             <div className="mb-4 p-3 rounded bg-red-500/10 text-red-400 text-sm">
-              {error}
+              {errors.general}
             </div>
           )}
 
           <div className="space-y-4">
-
+            {/* USERNAME */}
             <div>
               <label className="text-sm text-zinc-400 block mb-1">
                 Username
@@ -64,25 +104,39 @@ export default function RegisterPage() {
                 className="w-full p-2 rounded bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Username"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setErrors((prev) => ({ ...prev, username: "" }));
+                }}
               />
+              {errors.username && (
+                <p className="text-red-400 text-xs mt-1">
+                  • {errors.username}
+                </p>
+              )}
             </div>
 
+            {/* EMAIL */}
             <div>
-              <label className="text-sm text-zinc-400 block mb-1">
-                Email
-              </label>
+              <label className="text-sm text-zinc-400 block mb-1">Email</label>
               <input
                 type="email"
                 className="w-full p-2 rounded bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setErrors((prev) => ({ ...prev, email: "" }));
+                }}
               />
+              {errors.email && (
+                <p className="text-red-400 text-xs mt-1">
+                  • {errors.email}
+                </p>
+              )}
             </div>
 
+            {/* PASSWORD */}
             <div>
               <label className="text-sm text-zinc-400 block mb-1">
                 Password
@@ -92,11 +146,39 @@ export default function RegisterPage() {
                 className="w-full p-2 rounded bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setErrors((prev) => ({ ...prev, password: "" }));
+                }}
               />
+              {errors.password && (
+                <p className="text-red-400 text-xs mt-1">
+                  • {errors.password}
+                </p>
+              )}
             </div>
 
+            {/* CONFIRM PASSWORD */}
+            <div>
+              <label className="text-sm text-zinc-400 block mb-1">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                className="w-full p-2 rounded bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setErrors((prev) => ({ ...prev, confirmPassword: "" }));
+                }}
+              />
+              {errors.confirmPassword && (
+                <p className="text-red-400 text-xs mt-1">
+                  • {errors.confirmPassword}
+                </p>
+              )}
+            </div>
           </div>
 
           <button
@@ -115,12 +197,8 @@ export default function RegisterPage() {
               Sign in
             </Link>
           </p>
-
         </form>
-
       </div>
-
     </div>
   );
 }
-

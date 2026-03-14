@@ -34,9 +34,12 @@ export async function registerRequest(
     }),
   });
 
+
+  const data = await response.json();
+
   if (!response.ok) {
-    throw new Error("Failed to register");
+    throw data;
   }
 
-  return response.json();
+  return data;
 }
