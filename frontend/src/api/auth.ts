@@ -13,7 +13,7 @@ export async function loginRequest(username: string, password: string) {
   });
 
   if (!response.ok) throw new Error("Invalid credentials");
-  console.log(response);
+  
   return response.json();
 }
 

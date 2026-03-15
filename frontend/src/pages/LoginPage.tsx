@@ -17,7 +17,7 @@ export default function LoginPage() {
 
     try {
       const data = await loginRequest(username, password);
-      login(data.access);
+      login(data.access, username);
       navigate("/");
     } catch {
       setError("Invalid username or password");

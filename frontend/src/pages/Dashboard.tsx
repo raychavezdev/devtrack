@@ -45,7 +45,7 @@ function Dashboard() {
   const progressTasks = tasks.filter((t) => t.status === "progress");
   const doneTasks = tasks.filter((t) => t.status === "done");
 
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   function confirmLogoutAction() {
@@ -241,7 +241,11 @@ function Dashboard() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            <span className="text-sm bg-zinc-800 px-3 py-1 rounded-lg text-zinc-300">
+              👤 {user}
+            </span>
+
             <button
               onClick={handleLogout}
               className="px-3 py-2 text-sm bg-zinc-800 hover:bg-zinc-700 rounded-lg transition"

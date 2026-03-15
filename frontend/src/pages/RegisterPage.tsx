@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { registerRequest } from "../api/auth";
+import { registerRequest, loginRequest } from "../api/auth";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -51,8 +53,14 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+
       await registerRequest(username, email, password);
-      navigate("/login");
+
+      const data = await loginRequest(username, password);
+
+      login(data.access, username);
+
+      navigate("/");
     } catch (err: any) {
       const backendErrors: Record<string, string> = {};
 
