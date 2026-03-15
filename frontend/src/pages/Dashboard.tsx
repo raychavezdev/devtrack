@@ -40,6 +40,7 @@ function Dashboard() {
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [confirmLogout, setConfirmLogout] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const pendingTasks = tasks.filter((t) => t.status === "pending");
   const progressTasks = tasks.filter((t) => t.status === "progress");
@@ -222,6 +223,13 @@ function Dashboard() {
     return () => clearTimeout(timer);
   }, [successMessage]);
 
+  useEffect(() => {
+    const handleClick = () => setUserMenuOpen(false);
+    window.addEventListener("click", handleClick);
+
+    return () => window.removeEventListener("click", handleClick);
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-zinc-400 bg-zinc-950">
@@ -241,18 +249,33 @@ function Dashboard() {
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
-            <span className="text-sm bg-zinc-800 px-3 py-1 rounded-lg text-zinc-300">
-              👤 {user}
-            </span>
+          <div className="flex items-center gap-4 relative">
+            {/* User dropdown */}
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setUserMenuOpen(!userMenuOpen);
+                }}
+                className="flex items-center gap-2 px-3 py-2 text-sm bg-zinc-800 hover:bg-zinc-700 rounded-lg transition"
+              >
+                👤 {user}
+                <span className="text-zinc-400">▾</span>
+              </button>
 
-            <button
-              onClick={handleLogout}
-              className="px-3 py-2 text-sm bg-zinc-800 hover:bg-zinc-700 rounded-lg transition"
-            >
-              Logout
-            </button>
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-32 bg-zinc-900 border border-zinc-800 rounded-lg shadow-lg">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-zinc-800 rounded-lg"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
 
+            {/* Create task button */}
             <button
               onClick={openCreateModal}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition cursor-pointer"
