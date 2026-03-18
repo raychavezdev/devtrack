@@ -1,8 +1,6 @@
 from rest_framework import serializers
-from .models import Task
+from .models import Task, Project
 from django.contrib.auth.models import User
-
-
 
 class TaskSerializer(serializers.ModelSerializer):
 
@@ -55,3 +53,10 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data["password"],
         )
         return user
+    
+    
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ["id", "name", "description", "owner", "created", "updated"]
+        read_only_fields = ["owner"]
