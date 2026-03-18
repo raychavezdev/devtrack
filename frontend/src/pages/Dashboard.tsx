@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import TaskCard from "../components/TaskCard";
+import TaskModal from "../components/TaskModal";
+import ConfirmModal from "../components/ConfirmModal";
 import type { Task } from "../types/task";
-import { getTasks, updateTask } from "../api/tasks";
-import { deleteTask } from "../api/tasks";
+import { getTasks, updateTask, deleteTask } from "../api/tasks";
 import { useAuth } from "../context/AuthContext";
+import { useProject } from "../context/ProjectContext";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -20,8 +22,6 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
-import TaskModal from "../components/TaskModal";
-import ConfirmModal from "../components/ConfirmModal";
 
 type ColumnProps = {
   status: string;
@@ -32,6 +32,10 @@ type ColumnProps = {
 const columns = ["pending", "progress", "done"];
 
 function Dashboard() {
+  const { logout, user } = useAuth();
+  const { projects, activeProject, setActiveProject } = useProject();
+  const navigate = useNavigate();
+
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,13 +50,11 @@ function Dashboard() {
   const progressTasks = tasks.filter((t) => t.status === "progress");
   const doneTasks = tasks.filter((t) => t.status === "done");
 
-  const { logout, user } = useAuth();
-  const navigate = useNavigate();
-
   function confirmLogoutAction() {
     logout();
     navigate("/login");
   }
+
   function handleLogout() {
     setConfirmLogout(true);
   }
@@ -66,6 +68,7 @@ function Dashboard() {
     setEditingTask(task);
     setIsModalOpen(true);
   }
+
   function closeModal() {
     setIsModalOpen(false);
     setEditingTask(null);
@@ -73,7 +76,6 @@ function Dashboard() {
 
   function Column({ status, title, children }: ColumnProps) {
     const { setNodeRef } = useDroppable({ id: status });
-
     return (
       <div ref={setNodeRef} className="bg-zinc-900 rounded-xl p-4">
         <h2 className="font-semibold mb-4 text-zinc-300">{title}</h2>
@@ -85,25 +87,20 @@ function Dashboard() {
   function handleDragStart(event: DragStartEvent) {
     const id = Number(event.active.id);
     const task = tasks.find((t) => t.id === id);
-
     if (task) setActiveTask(task);
   }
 
   function handleDragOver(event: DragOverEvent) {
     const { active, over } = event;
-
     if (!over) return;
 
     const activeId = Number(active.id);
     const overId = over.id;
-
     const activeIndex = tasks.findIndex((t) => t.id === activeId);
     const activeTask = tasks[activeIndex];
-
     if (!activeTask) return;
 
     const overTask = tasks.find((t) => t.id === Number(overId));
-
     let newStatus = activeTask.status;
 
     if (columns.includes(String(overId))) {
@@ -123,58 +120,36 @@ function Dashboard() {
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-
     if (!over) return;
 
     const activeId = Number(active.id);
     const overId = Number(over.id);
-
     const activeIndex = tasks.findIndex((t) => t.id === activeId);
     const overIndex = tasks.findIndex((t) => t.id === overId);
 
     const activeTask = tasks[activeIndex];
     const overTask = tasks[overIndex];
-
     if (!activeTask || !overTask) return;
 
     const newStatus = overTask.status;
-
-    // mover visualmente
     const newTasks = arrayMove(tasks, activeIndex, overIndex);
-
-    // actualizar status en el array local
-    newTasks[overIndex] = {
-      ...newTasks[overIndex],
-      status: newStatus,
-    };
-
+    newTasks[overIndex] = { ...newTasks[overIndex], status: newStatus };
     setTasks(newTasks);
 
-    // tareas de la columna destino
+    // recalcular posición
     const columnTasks = newTasks.filter((t) => t.status === newStatus);
-
     const newIndex = columnTasks.findIndex((t) => t.id === activeId);
-
     const prevTask = columnTasks[newIndex - 1];
     const nextTask = columnTasks[newIndex + 1];
-
     let newPosition;
 
-    if (!prevTask && !nextTask) {
-      newPosition = 1000;
-    } else if (!prevTask) {
-      newPosition = nextTask.position / 2;
-    } else if (!nextTask) {
-      newPosition = prevTask.position + 1000;
-    } else {
-      newPosition = (prevTask.position + nextTask.position) / 2;
-    }
+    if (!prevTask && !nextTask) newPosition = 1000;
+    else if (!prevTask) newPosition = nextTask.position / 2;
+    else if (!nextTask) newPosition = prevTask.position + 1000;
+    else newPosition = (prevTask.position + nextTask.position) / 2;
 
     try {
-      await updateTask(activeId, {
-        status: newStatus,
-        position: newPosition,
-      });
+      await updateTask(activeId, { status: newStatus, position: newPosition });
     } catch (error) {
       console.error(error);
       fetchTasks();
@@ -184,9 +159,11 @@ function Dashboard() {
   }
 
   const fetchTasks = async () => {
+    if (!activeProject) return; // <--- solo cargar tareas si hay proyecto
+    setLoading(true);
     try {
-      const data = await getTasks();
-      setTasks(data);
+      const data = await getTasks(); // tu API ya puede filtrar por proyecto si quieres
+      setTasks(data.filter((t) => t.project === activeProject.id));
     } catch (error) {
       console.error(error);
     } finally {
@@ -196,13 +173,10 @@ function Dashboard() {
 
   async function confirmDelete() {
     if (!taskToDelete) return;
-
     try {
       await deleteTask(taskToDelete.id);
-
       setTasks((prev) => prev.filter((t) => t.id !== taskToDelete.id));
       setTaskToDelete(null);
-
       setSuccessMessage("Task deleted successfully");
     } catch (error) {
       console.error(error);
@@ -211,24 +185,28 @@ function Dashboard() {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [activeProject]);
 
   useEffect(() => {
     if (!successMessage) return;
-
-    const timer = setTimeout(() => {
-      setSuccessMessage(null);
-    }, 2000);
-
+    const timer = setTimeout(() => setSuccessMessage(null), 2000);
     return () => clearTimeout(timer);
   }, [successMessage]);
 
   useEffect(() => {
     const handleClick = () => setUserMenuOpen(false);
     window.addEventListener("click", handleClick);
-
     return () => window.removeEventListener("click", handleClick);
   }, []);
+
+  if (!activeProject) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-zinc-400 bg-zinc-950">
+        You don&apos;t have any projects yet. Create one to start managing tasks
+        🚀
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -241,11 +219,15 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="max-w-5xl mx-auto p-8">
+        {/* HEADER */}
         <header className="mb-10 flex justify-between border-b border-zinc-800 pb-5">
           <div>
             <h1 className="text-4xl font-bold tracking-tight">DevTrack</h1>
             <p className="text-zinc-400 mt-2">
               Manage bugs, improvements and development tasks
+            </p>
+            <p className="mt-1 text-zinc-500">
+              Project: {activeProject?.name || "No project selected"}{" "}
             </p>
           </div>
 
@@ -262,7 +244,6 @@ function Dashboard() {
                 👤 {user}
                 <span className="text-zinc-400">▾</span>
               </button>
-
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-32 bg-zinc-900 border border-zinc-800 rounded-lg shadow-lg">
                   <button
@@ -274,6 +255,26 @@ function Dashboard() {
                 </div>
               )}
             </div>
+
+            {/* Selector de proyectos */}
+            {projects.length > 0 && (
+              <select
+                value={activeProject?.id || ""}
+                onChange={(e) => {
+                  const selected = projects.find(
+                    (p) => p.id === Number(e.target.value),
+                  );
+                  if (selected) setActiveProject(selected);
+                }}
+                className="bg-zinc-800 text-zinc-100 border border-zinc-700 rounded-lg p-2 mr-4"
+              >
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            )}
 
             {/* Create task button */}
             <button
@@ -366,8 +367,8 @@ function Dashboard() {
         task={editingTask}
         onClose={closeModal}
         onSaved={(message) => {
-          fetchTasks();
-          setSuccessMessage(message);
+          fetchTasks(); // refresca la lista de tareas
+          setSuccessMessage(message); // muestra mensaje de éxito
         }}
       />
 

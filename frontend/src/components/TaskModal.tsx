@@ -1,5 +1,6 @@
 import TaskForm from "./TaskForm";
 import type { Task } from "../types/task";
+import { useProject } from "../context/ProjectContext";
 
 type Props = {
   isOpen: boolean;
@@ -9,6 +10,8 @@ type Props = {
 };
 
 export default function TaskModal({ isOpen, task, onClose, onSaved }: Props) {
+  const { activeProject } = useProject(); // obtener proyecto activo
+
   if (!isOpen) return null;
 
   return (
@@ -29,6 +32,7 @@ export default function TaskModal({ isOpen, task, onClose, onSaved }: Props) {
 
         <TaskForm
           task={task}
+          projectId={activeProject?.id}
           onTaskSaved={(message) => {
             onSaved(message);
             onClose();
@@ -38,4 +42,3 @@ export default function TaskModal({ isOpen, task, onClose, onSaved }: Props) {
     </div>
   );
 }
-

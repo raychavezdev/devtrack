@@ -4,15 +4,15 @@ import type { Task } from "../types/task";
 
 interface TaskFormProps {
   task?: Task | null;
+  projectId?: number;
   onTaskSaved?: (message: string) => void;
 }
 
-export default function TaskForm({ task, onTaskSaved }: TaskFormProps) {
+export default function TaskForm({ task, projectId, onTaskSaved }: TaskFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [taskType, setTaskType] = useState("feature");
   const [priority, setPriority] = useState("medium");
-
   const [loading, setLoading] = useState(false);
 
   const isEditing = !!task;
@@ -28,6 +28,11 @@ export default function TaskForm({ task, onTaskSaved }: TaskFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!projectId && !isEditing) {
+      console.error("No project selected for new task");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -46,6 +51,7 @@ export default function TaskForm({ task, onTaskSaved }: TaskFormProps) {
           description,
           task_type: taskType,
           priority,
+          project: projectId!,
         });
 
         onTaskSaved?.("Task created successfully");
