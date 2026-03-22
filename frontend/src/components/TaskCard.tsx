@@ -54,11 +54,7 @@ export default function TaskCard({ task, onDelete, onEdit }: Props) {
           {task.priority}
         </span>
 
-        {task.project && (
-          <span className="px-2 py-1 bg-green-500/10 text-green-400 rounded-md">
-            Project: {task.project}
-          </span>
-        )}
+       
       </div>
 
       <div className="border-t border-zinc-800 mt-3 flex justify-end">

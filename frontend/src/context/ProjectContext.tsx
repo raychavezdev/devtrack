@@ -24,11 +24,13 @@ const ProjectContext = createContext<ProjectContextType>({
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const { token } = useAuth();
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
 
   const fetchProjects = async () => {
     if (!token) return;
+
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/projects/`, {
         headers: {
@@ -40,8 +42,13 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       if (!res.ok) throw new Error("Failed to fetch projects");
 
       const data: Project[] = await res.json();
+
       setProjects(data);
-      if (!activeProject && data.length > 0) setActiveProject(data[0]);
+
+      // si no hay proyecto activo, asigna el primero
+      if (!activeProject && data.length > 0) {
+        setActiveProject(data[0]);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -53,7 +60,12 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ProjectContext.Provider
-      value={{ projects, activeProject, setActiveProject, fetchProjects }}
+      value={{
+        projects,
+        activeProject,
+        setActiveProject,
+        fetchProjects,
+      }}
     >
       {children}
     </ProjectContext.Provider>
