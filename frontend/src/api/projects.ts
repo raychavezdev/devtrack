@@ -1,15 +1,6 @@
 import type { Project } from "../context/ProjectContext";
+import { fetchWithAuth } from "./fetchWithAuth";
 
-export async function getProjects(token: string): Promise<Project[]> {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/projects/`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!res.ok) throw new Error("Failed to fetch projects");
-
-  const data: Project[] = await res.json();
-  return data;
+export async function getProjects(): Promise<Project[]> {
+  return fetchWithAuth("/projects/");
 }

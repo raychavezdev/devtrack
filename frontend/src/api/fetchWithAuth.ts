@@ -19,7 +19,6 @@ export const fetchWithAuth = async (
 
   if (!response.ok) {
     const error = await response.json();
-    console.error("API Error:", error);
     throw new Error(JSON.stringify(error));
   }
 

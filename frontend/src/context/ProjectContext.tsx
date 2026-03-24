@@ -1,12 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { useAuth } from "./AuthContext";
-
-export type Project = {
-  id: number;
-  name: string;
-  description: string;
-};
+import { getProjects } from "../api/projects";
+import type { Project } from "../types/project";
 
 type ProjectContextType = {
   projects: Project[];
@@ -32,23 +28,14 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     if (!token) return;
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/projects/`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error("Failed to fetch projects");
-
-      const data: Project[] = await res.json();
+      const data = await getProjects();
 
       setProjects(data);
 
-      // si no hay proyecto activo, asigna el primero
-      if (!activeProject && data.length > 0) {
-        setActiveProject(data[0]);
+      if (!data.find((p) => p.id === activeProject?.id)) {
+        setActiveProject(data[0] || null);
       }
+      
     } catch (err) {
       console.error(err);
     }
