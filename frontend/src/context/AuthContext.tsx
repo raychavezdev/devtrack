@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 interface AuthContextType {
   token: string | null;
   user: string | null;
-  login: (token: string, username: string) => void;
+  login: (access: string, refresh: string, username: string) => void;
   logout: () => void;
   loading: boolean;
 }
@@ -11,7 +11,6 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,16 +27,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(false);
   }, []);
 
-  const login = (token: string, username: string) => {
-    localStorage.setItem("token", token);
+  const login = (access: string, refresh: string, username: string) => {
+    localStorage.setItem("token", access);
+    localStorage.setItem("refresh", refresh);
     localStorage.setItem("username", username);
 
-    setToken(token);
+    setToken(access);
     setUser(username);
   };
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh");
     localStorage.removeItem("username");
 
     setToken(null);

@@ -4,18 +4,58 @@ export const fetchWithAuth = async (
   endpoint: string,
   options: RequestInit = {}
 ) => {
-  const token = localStorage.getItem("token");
+  let token = localStorage.getItem("token");
 
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-    ...options.headers,
+  const makeRequest = async (accessToken: string | null) => {
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+      ...options.headers,
+    };
+
+    return fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
   };
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  let response = await makeRequest(token);
+
+
+  if (response.status === 401) {
+    const refresh = localStorage.getItem("refresh");
+
+    if (!refresh) {
+      handleLogout();
+      return;
+    }
+
+    try {
+      const refreshRes = await fetch(`${API_URL}/token/refresh/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refresh }),
+      });
+
+      if (!refreshRes.ok) {
+        handleLogout();
+        return;
+      }
+
+      const data = await refreshRes.json();
+
+      
+      localStorage.setItem("token", data.access);
+
+      
+      response = await makeRequest(data.access);
+    } catch (error) {
+      handleLogout();
+      return;
+    }
+  }
 
   if (!response.ok) {
     const error = await response.json();
@@ -28,3 +68,13 @@ export const fetchWithAuth = async (
 
   return response.json();
 };
+
+
+function handleLogout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("refresh");
+
+  alert("Session expired. Please login again.");
+
+  window.location.href = "/login";
+}
