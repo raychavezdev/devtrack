@@ -58,7 +58,7 @@ export default function RegisterPage() {
 
       const data = await loginRequest(username, password);
 
-      login(data.access, username);
+      login(data.access,data.refresh, username);
 
       navigate("/");
     } catch (err: any) {

@@ -1,19 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProject } from "../context/ProjectContext";
 import { fetchWithAuth } from "../api/fetchWithAuth";
+import type { Project } from "../types/project";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   onSaved?: (message: string) => void;
+  project?: Project | null;
 };
 
-export default function ProjectModal({ isOpen, onClose, onSaved }: Props) {
+export default function ProjectModal({
+  isOpen,
+  onClose,
+  onSaved,
+  project,
+}: Props) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { setActiveProject, fetchProjects } = useProject();
+
+  const isEditing = !!project;
+
+  useEffect(() => {
+    if (project) {
+      setName(project.name);
+      setDescription(project.description);
+    } else {
+      setName("");
+      setDescription("");
+    }
+  }, [project, isOpen]);
 
   if (!isOpen) return null;
 
@@ -22,20 +41,29 @@ export default function ProjectModal({ isOpen, onClose, onSaved }: Props) {
     setLoading(true);
 
     try {
-      const newProject = await fetchWithAuth("/projects/", {
-        method: "POST",
-        body: JSON.stringify({ name, description }),
-      });
+      let savedProject;
 
-      
+      if (isEditing) {
+        savedProject = await fetchWithAuth(`/projects/${project!.id}/`, {
+          method: "PUT",
+          body: JSON.stringify({ name, description }),
+        });
+      } else {
+        savedProject = await fetchWithAuth("/projects/", {
+          method: "POST",
+          body: JSON.stringify({ name, description }),
+        });
+      }
+
       await fetchProjects();
+      setActiveProject(savedProject);
 
-      setActiveProject(newProject);
+      onSaved?.(
+        isEditing
+          ? "Project updated successfully"
+          : "Project created successfully"
+      );
 
-      setName("");
-      setDescription("");
-
-      onSaved?.("Project created successfully");
       onClose();
     } catch (err) {
       console.error(err);
@@ -55,12 +83,14 @@ export default function ProjectModal({ isOpen, onClose, onSaved }: Props) {
       >
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-zinc-400 hover:text-zinc-200 cursor-pointer"
+          className="absolute top-3 right-3 text-zinc-400 hover:text-zinc-200"
         >
           ✕
         </button>
 
-        <h2 className="text-xl font-semibold mb-4">Create Project</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          {isEditing ? "Edit Project" : "Create Project"}
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -84,7 +114,13 @@ export default function ProjectModal({ isOpen, onClose, onSaved }: Props) {
             disabled={loading}
             className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg font-medium w-full disabled:opacity-50"
           >
-            {loading ? "Creating..." : "Create Project"}
+            {loading
+              ? isEditing
+                ? "Updating..."
+                : "Creating..."
+              : isEditing
+              ? "Update Project"
+              : "Create Project"}
           </button>
         </form>
       </div>

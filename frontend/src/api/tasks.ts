@@ -1,30 +1,30 @@
 import type { Task } from "../types/task";
 import { fetchWithAuth } from "./fetchWithAuth";
 
-// Obtener tareas (opcionalmente por project_id)
+const BASE = "/tasks/";
+
 export async function getTasks(projectId?: number): Promise<Task[]> {
-  let url = "/tasks/";
+  let url = BASE;
   if (projectId) {
     url += `?project=${projectId}`;
   }
   return fetchWithAuth(url);
 }
 
-// Crear tarea con project_id
+
 export async function createTask(task: {
   title: string;
   description: string;
   task_type: string;
   priority: string;
-  project: number; // <-- nuevo campo
+  project: number;
 }): Promise<Task> {
-  return fetchWithAuth("/tasks/", {
+  return fetchWithAuth(BASE, {
     method: "POST",
     body: JSON.stringify(task),
   });
 }
 
-// Actualizar status y posición (sin cambios)
 export async function updateTask(
   id: number,
   data: {
@@ -32,13 +32,13 @@ export async function updateTask(
     position?: number;
   }
 ): Promise<Task> {
-  return fetchWithAuth(`/tasks/${id}/`, {
+  return fetchWithAuth(`${BASE}${id}/`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
 }
 
-// Editar tarea (sin cambios, solo título, descripción, tipo, prioridad)
+
 export async function editTask(
   id: number,
   data: {
@@ -46,17 +46,17 @@ export async function editTask(
     description: string;
     task_type: string;
     priority: string;
-    project?: number; // opcional si quieres permitir mover de proyecto
+    project?: number;
   }
 ): Promise<Task> {
-  return fetchWithAuth(`/tasks/${id}/`, {
+  return fetchWithAuth(`${BASE}${id}/`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
 }
 
-// Eliminar tarea (sin cambios)
+
 export async function deleteTask(id: number) {
-  await fetchWithAuth(`/tasks/${id}/`, { method: "DELETE" });
+  await fetchWithAuth(`${BASE}${id}/`, { method: "DELETE" });
   return true;
 }

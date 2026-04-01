@@ -116,8 +116,8 @@ function Dashboard() {
     if (newStatus !== activeTask.status) {
       setTasks((prev) =>
         prev.map((task) =>
-          task.id === activeId ? { ...task, status: newStatus } : task
-        )
+          task.id === activeId ? { ...task, status: newStatus } : task,
+        ),
       );
     }
   }
@@ -237,6 +237,14 @@ function Dashboard() {
           </div>
 
           <div className="flex items-center gap-4 relative">
+            {/* PROJECTS */}
+            <button
+              onClick={() => navigate("/projects")}
+              className="px-3 py-2 text-sm bg-zinc-800 hover:bg-zinc-700 rounded-lg"
+            >
+             Manage Projects
+            </button>
+
             {/* USER */}
             <div className="relative">
               <button
@@ -352,7 +360,10 @@ function Dashboard() {
             onDragEnd={handleDragEnd}
           >
             <div className="grid md:grid-cols-3 gap-6">
-              <Column status="pending" title={`Pending (${pendingTasks.length})`}>
+              <Column
+                status="pending"
+                title={`Pending (${pendingTasks.length})`}
+              >
                 <SortableContext
                   items={pendingTasks.map((t) => t.id)}
                   strategy={verticalListSortingStrategy}

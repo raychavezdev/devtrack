@@ -5,6 +5,7 @@ import RegisterPage from "./pages/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ProjectProvider } from "./context/ProjectContext";
 import { AuthProvider } from "./context/AuthContext";
+import ProjectsPage from "./pages/ProjectsPage";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/projects" element={<ProjectsPage />} />
           </Routes>
         </BrowserRouter>
       </ProjectProvider>
