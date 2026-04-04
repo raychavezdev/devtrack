@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { ProjectProvider } from "./context/ProjectContext";
 import { AuthProvider } from "./context/AuthContext";
 import ProjectsPage from "./pages/ProjectsPage";
+import AppLayout from "./components/layout/AppLayout";
 
 export default function App() {
   return (
@@ -13,17 +14,23 @@ export default function App() {
       <ProjectProvider>
         <BrowserRouter>
           <Routes>
+            
+            {/* PUBLIC */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+
+            {/* PROTECTED + LAYOUT */}
             <Route
-              path="/"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <AppLayout />
                 </ProtectedRoute>
               }
-            />
-            <Route path="/projects" element={<ProjectsPage />} />
+            >
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/projects" element={<ProjectsPage />} />
+            </Route>
+
           </Routes>
         </BrowserRouter>
       </ProjectProvider>

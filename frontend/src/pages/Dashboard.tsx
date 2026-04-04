@@ -226,103 +226,21 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="max-w-5xl mx-auto p-8">
-        {/* HEADER */}
-        <header className="mb-5 flex justify-between border-b border-zinc-800 pb-5">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight">DevTrack</h1>
-            <p className="text-zinc-400 mt-2">
-              Manage bugs, improvements and development tasks
-            </p>
-          </div>
+      <div className="flex justify-between items-center  px-8 mb-6">
+        <div className={` ${!activeProject ? "hidden" : ""} `}>
+          <h2 className="text-2xl font-semibold">{activeProject?.name}</h2>
+          <p className="text-zinc-400 text-sm">Manage your tasks</p>
+        </div>
 
-          <div className="flex items-center gap-4 relative">
-            {/* PROJECTS */}
-            <button
-              onClick={() => navigate("/projects")}
-              className="px-3 py-2 text-sm bg-zinc-800 hover:bg-zinc-700 rounded-lg"
-            >
-             Manage Projects
-            </button>
-
-            {/* USER */}
-            <div className="relative">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setUserMenuOpen(!userMenuOpen);
-                }}
-                className="flex items-center gap-2 px-3 py-2 text-sm bg-zinc-800 hover:bg-zinc-700 rounded-lg transition"
-              >
-                👤 {user}
-                <span className="text-zinc-400">▾</span>
-              </button>
-
-              {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-32 bg-zinc-900 border border-zinc-800 rounded-lg shadow-lg">
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-zinc-800 rounded-lg"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* PROJECT SELECTOR */}
-            <div className="relative">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setProjectMenuOpen(!projectMenuOpen);
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition text-sm"
-              >
-                📁 {activeProject?.name || "Select project"}
-                <span className="text-zinc-400">▾</span>
-              </button>
-
-              {projectMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-800 rounded-lg shadow-lg z-50">
-                  {projects.map((project) => (
-                    <button
-                      key={project.id}
-                      onClick={() => {
-                        setActiveProject(project);
-                        setProjectMenuOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-zinc-800"
-                    >
-                      📁 {project.name}
-                    </button>
-                  ))}
-
-                  <div className="border-t border-zinc-800 my-1"></div>
-
-                  <button
-                    onClick={() => {
-                      setProjectMenuOpen(false);
-                      setProjectModalOpen(true);
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-green-400 hover:bg-zinc-800"
-                  >
-                    + New Project
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* NEW TASK */}
-            <button
-              onClick={openCreateModal}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              + New Task
-            </button>
-          </div>
-        </header>
-
+        <button
+          onClick={openCreateModal}
+          className={`px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50 ${!activeProject ? "hidden" : ""}`}
+     
+        >
+          + New Task
+        </button>
+      </div>
+      <div className="max-w-5xl mx-auto px-8 mb-4">
         {successMessage && (
           <div className="mb-4 p-3 rounded-lg bg-green-500/10 text-green-400 text-sm">
             {successMessage}
