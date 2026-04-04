@@ -7,7 +7,7 @@ import type { Project } from "../types/project";
 type ProjectContextType = {
   projects: Project[];
   activeProject: Project | null;
-  setActiveProject: (project: Project) => void;
+  setActiveProject: (project: Project | null) => void;
   fetchProjects: () => Promise<void>;
 };
 
@@ -22,20 +22,45 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const { token } = useAuth();
 
   const [projects, setProjects] = useState<Project[]>([]);
-  const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [activeProject, _setActiveProject] = useState<Project | null>(null);
+
+
+  const setActiveProject = (project: Project | null) => {
+    _setActiveProject(project);
+
+    if (project) {
+      localStorage.setItem("activeProjectId", project.id.toString());
+    } else {
+      localStorage.removeItem("activeProjectId");
+    }
+  };
 
   const fetchProjects = async () => {
     if (!token) return;
 
     try {
       const data = await getProjects();
-
       setProjects(data);
 
-      if (!data.find((p) => p.id === activeProject?.id)) {
-        setActiveProject(data[0] || null);
-      }
+      const storedId = localStorage.getItem("activeProjectId");
+
       
+      if (storedId) {
+        const found = data.find((p) => p.id === Number(storedId));
+
+        if (found) {
+          _setActiveProject(found);
+          return;
+        }
+      }
+
+      
+      if (data.length > 0) {
+        setActiveProject(data[0]);
+      } else {
+        setActiveProject(null);
+      }
+
     } catch (err) {
       console.error(err);
     }

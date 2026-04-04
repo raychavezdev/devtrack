@@ -53,12 +53,11 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-
       await registerRequest(username, email, password);
 
       const data = await loginRequest(username, password);
 
-      login(data.access,data.refresh, username);
+      login(data.access, data.refresh, username);
 
       navigate("/");
     } catch (err: any) {
@@ -79,11 +78,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="flex items-center justify-center min-h-screen bg-linear-to-b from-zinc-950 to-zinc-900 text-zinc-100">
       <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">DevTrack</h1>
-          <p className="text-zinc-400 mt-2 text-sm">
+        <div className="mb-4 text-center">
+          <h1 className="text-3xl font-bold tracking-tight mt-4">DevTrack</h1>
+          <p className="text-zinc-400 my-2 text-sm">
             Create your account to start managing tasks
           </p>
         </div>
@@ -118,9 +117,7 @@ export default function RegisterPage() {
                 }}
               />
               {errors.username && (
-                <p className="text-red-400 text-xs mt-1">
-                  • {errors.username}
-                </p>
+                <p className="text-red-400 text-xs mt-1">• {errors.username}</p>
               )}
             </div>
 
@@ -138,9 +135,7 @@ export default function RegisterPage() {
                 }}
               />
               {errors.email && (
-                <p className="text-red-400 text-xs mt-1">
-                  • {errors.email}
-                </p>
+                <p className="text-red-400 text-xs mt-1">• {errors.email}</p>
               )}
             </div>
 
@@ -160,9 +155,7 @@ export default function RegisterPage() {
                 }}
               />
               {errors.password && (
-                <p className="text-red-400 text-xs mt-1">
-                  • {errors.password}
-                </p>
+                <p className="text-red-400 text-xs mt-1">• {errors.password}</p>
               )}
             </div>
 
@@ -206,7 +199,12 @@ export default function RegisterPage() {
             </Link>
           </p>
         </form>
+           {/* Footer */}
+      <p className="text-center text-zinc-500 text-xs my-6">
+        DevTrack — Task management for developers
+      </p>
       </div>
+   
     </div>
   );
 }
