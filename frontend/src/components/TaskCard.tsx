@@ -61,14 +61,14 @@ export default function TaskCard({ task, onDelete, onEdit }: Props) {
         <button
           onPointerDown={(e) => e.stopPropagation()}
           onClick={() => onEdit?.(task)}
-          className="p-1 text-xs text-blue-300 hover:text-blue-500 cursor-pointer"
+          className="p-1 text-xs text-blue-300 hover:text-blue-500"
         >
           Edit
         </button>
         <button
           onPointerDown={(e) => e.stopPropagation()}
           onClick={() => onDelete?.(task)}
-          className="p-1 text-xs text-gray-400 hover:text-red-400 cursor-pointer"
+          className="p-1 text-xs text-gray-400 hover:text-red-400"
         >
           Delete
         </button>

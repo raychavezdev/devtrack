@@ -4,9 +4,8 @@ import TaskModal from "../components/TaskModal";
 import ConfirmModal from "../components/ConfirmModal";
 import type { Task } from "../types/task";
 import { getTasks, updateTask, deleteTask } from "../api/tasks";
-import { useAuth } from "../context/AuthContext";
 import { useProject } from "../context/ProjectContext";
-import { useNavigate } from "react-router-dom";
+
 
 import {
   DndContext,
@@ -34,10 +33,8 @@ type ColumnProps = {
 const columns = ["pending", "progress", "done"];
 
 function Dashboard() {
-  const { logout, user } = useAuth();
-  const { projects, activeProject, setActiveProject } = useProject();
-  const navigate = useNavigate();
 
+  const { activeProject } = useProject();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,23 +42,12 @@ function Dashboard() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [confirmLogout, setConfirmLogout] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
-  const [projectMenuOpen, setProjectMenuOpen] = useState(false);
 
   const pendingTasks = tasks.filter((t) => t.status === "pending");
   const progressTasks = tasks.filter((t) => t.status === "progress");
   const doneTasks = tasks.filter((t) => t.status === "done");
 
-  function confirmLogoutAction() {
-    logout();
-    navigate("/login");
-  }
-
-  function handleLogout() {
-    setConfirmLogout(true);
-  }
 
   function openCreateModal() {
     setEditingTask(null);
@@ -207,14 +193,7 @@ function Dashboard() {
     return () => clearTimeout(timer);
   }, [successMessage]);
 
-  useEffect(() => {
-    const handleClick = () => {
-      setUserMenuOpen(false);
-      setProjectMenuOpen(false);
-    };
-    window.addEventListener("click", handleClick);
-    return () => window.removeEventListener("click", handleClick);
-  }, []);
+
 
   if (loading && activeProject) {
     return (
@@ -360,14 +339,6 @@ function Dashboard() {
         onCancel={() => setTaskToDelete(null)}
       />
 
-      <ConfirmModal
-        isOpen={confirmLogout}
-        title="Logout"
-        message="Are you sure you want to log out?"
-        confirmText="Logout"
-        onConfirm={confirmLogoutAction}
-        onCancel={() => setConfirmLogout(false)}
-      />
 
       <ProjectModal
         isOpen={projectModalOpen}
