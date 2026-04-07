@@ -2,7 +2,7 @@ import TaskForm from "./TaskForm";
 import type { Task } from "../types/task";
 import { useProject } from "../context/ProjectContext";
 
-type Props = {
+interface Props {
   isOpen: boolean;
   task: Task | null;
   onClose: () => void;

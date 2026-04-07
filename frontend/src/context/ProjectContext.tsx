@@ -4,7 +4,7 @@ import { useAuth } from "./AuthContext";
 import { getProjects } from "../api/projects";
 import type { Project } from "../types/project";
 
-type ProjectContextType = {
+interface ProjectContextType {
   projects: Project[];
   activeProject: Project | null;
   setActiveProject: (project: Project | null) => void;

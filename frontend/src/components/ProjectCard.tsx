@@ -2,7 +2,7 @@ import type { Project } from "../types/project";
 import { useNavigate } from "react-router-dom";
 import { useProject } from "../context/ProjectContext";
 
-type Props = {
+interface Props {
   project: Project;
   onEdit?: (project: Project) => void;
   onDelete?: (project: Project) => void;

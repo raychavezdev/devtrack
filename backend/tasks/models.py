@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
-
+from django.utils import timezone
 
 
 
@@ -69,6 +69,22 @@ class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old = Task.objects.get(pk=self.pk)
+
+            if old.status != "done" and self.status == "done":
+                self.completed_at = timezone.now()
+
+            elif old.status == "done" and self.status != "done":
+                self.completed_at = None
+
+        else:
+            if self.status == "done":
+                self.completed_at = timezone.now()
+
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         return self.title
     

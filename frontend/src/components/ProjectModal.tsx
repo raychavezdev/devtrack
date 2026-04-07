@@ -3,7 +3,7 @@ import { useProject } from "../context/ProjectContext";
 import { fetchWithAuth } from "../api/fetchWithAuth";
 import type { Project } from "../types/project";
 
-type Props = {
+interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSaved?: (message: string) => void;

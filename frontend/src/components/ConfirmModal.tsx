@@ -1,4 +1,4 @@
-type Props = {
+interface Props {
   isOpen: boolean;
   title: string;
   message: string;

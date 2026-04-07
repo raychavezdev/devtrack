@@ -2,7 +2,7 @@ import type { Task } from "../types/task";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-type Props = {
+interface Props {
   task: Task;
   onDelete?: (task: Task) => void;
   onEdit?: (task: Task) => void;

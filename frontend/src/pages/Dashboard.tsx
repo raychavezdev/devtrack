@@ -6,7 +6,6 @@ import type { Task } from "../types/task";
 import { getTasks, updateTask, deleteTask } from "../api/tasks";
 import { useProject } from "../context/ProjectContext";
 
-
 import {
   DndContext,
   DragOverlay,
@@ -24,16 +23,15 @@ import {
 
 import ProjectModal from "../components/ProjectModal";
 
-type ColumnProps = {
+interface ColumnProps {
   status: string;
   title: string;
   children: React.ReactNode;
-};
+}
 
 const columns = ["pending", "progress", "done"];
 
 function Dashboard() {
-
   const { activeProject } = useProject();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
@@ -47,7 +45,6 @@ function Dashboard() {
   const pendingTasks = tasks.filter((t) => t.status === "pending");
   const progressTasks = tasks.filter((t) => t.status === "progress");
   const doneTasks = tasks.filter((t) => t.status === "done");
-
 
   function openCreateModal() {
     setEditingTask(null);
@@ -193,8 +190,6 @@ function Dashboard() {
     return () => clearTimeout(timer);
   }, [successMessage]);
 
-
-
   if (loading && activeProject) {
     return (
       <div className="min-h-screen flex items-center justify-center text-zinc-400 bg-zinc-950">
@@ -214,7 +209,6 @@ function Dashboard() {
         <button
           onClick={openCreateModal}
           className={`px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50 ${!activeProject ? "hidden" : ""}`}
-     
         >
           + New Task
         </button>
@@ -338,7 +332,6 @@ function Dashboard() {
         onConfirm={confirmDelete}
         onCancel={() => setTaskToDelete(null)}
       />
-
 
       <ProjectModal
         isOpen={projectModalOpen}
