@@ -4,11 +4,17 @@ import { CSS } from "@dnd-kit/utilities";
 
 interface Props {
   task: Task;
+  isHighlighted?: boolean;
   onDelete?: (task: Task) => void;
   onEdit?: (task: Task) => void;
-};
+}
 
-export default function TaskCard({ task, onDelete, onEdit }: Props) {
+export default function TaskCard({
+  task,
+  isHighlighted,
+  onDelete,
+  onEdit,
+}: Props) {
   const {
     attributes,
     listeners,
@@ -30,16 +36,18 @@ export default function TaskCard({ task, onDelete, onEdit }: Props) {
       {...attributes}
       style={style}
       className={`
-        bg-zinc-900
-        border border-zinc-700
-        rounded-xl
-        p-5
-        cursor-grab
-        hover:shadow-lg
-        hover:border-blue-400
-        transition
-        ${isDragging ? "opacity-40" : ""}
-      `}
+      bg-zinc-900
+      border border-zinc-700
+      rounded-xl
+      p-5
+      cursor-grab
+      hover:shadow-lg
+      hover:border-blue-400
+      transition
+      ${isDragging ? "opacity-40" : ""}
+
+      ${isHighlighted ? "animate-glow hover:border-zinc-700" : ""}
+    `}
     >
       <h3 className="text-lg font-semibold">{task.title}</h3>
 
@@ -53,8 +61,6 @@ export default function TaskCard({ task, onDelete, onEdit }: Props) {
         <span className="px-2 py-1 bg-purple-500/10 text-purple-400 rounded-md">
           {task.priority}
         </span>
-
-       
       </div>
 
       <div className="border-t border-zinc-800 mt-3 flex justify-end">

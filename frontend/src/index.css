@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 0px rgba(34, 197, 94, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 0px rgba(34, 197, 94, 0);
+  }
+}
+
+.animate-glow {
+  animation: glow 0.8s ease-out;
+  animation-fill-mode: forwards;
+}

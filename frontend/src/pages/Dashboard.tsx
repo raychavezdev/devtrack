@@ -41,6 +41,7 @@ function Dashboard() {
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
+  const [recentlyMovedTaskId, setRecentlyMovedTaskId] = useState<number | null>(null);
 
   const pendingTasks = tasks.filter((t) => t.status === "pending");
   const progressTasks = tasks.filter((t) => t.status === "progress");
@@ -145,6 +146,10 @@ function Dashboard() {
         status: newStatus,
         position: newPosition,
       });
+
+      setRecentlyMovedTaskId(activeId);
+      setTimeout(() => setRecentlyMovedTaskId(null), 1000);
+
     } catch (error) {
       console.error(error);
       fetchTasks();
@@ -263,6 +268,7 @@ function Dashboard() {
                     <TaskCard
                       key={task.id}
                       task={task}
+                      isHighlighted={task.id === recentlyMovedTaskId}
                       onDelete={(task) => setTaskToDelete(task)}
                       onEdit={(task) => openEditModal(task)}
                     />
@@ -282,6 +288,7 @@ function Dashboard() {
                     <TaskCard
                       key={task.id}
                       task={task}
+                      isHighlighted={task.id === recentlyMovedTaskId}
                       onDelete={(task) => setTaskToDelete(task)}
                       onEdit={(task) => openEditModal(task)}
                     />
@@ -298,6 +305,7 @@ function Dashboard() {
                     <TaskCard
                       key={task.id}
                       task={task}
+                      isHighlighted={task.id === recentlyMovedTaskId}
                       onDelete={(task) => setTaskToDelete(task)}
                       onEdit={(task) => openEditModal(task)}
                     />
