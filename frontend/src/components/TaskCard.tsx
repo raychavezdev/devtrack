@@ -2,6 +2,19 @@ import type { Task } from "../types/task";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+const statusColors: Record<string, string> = {
+  pending: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
+  progress: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  done: "bg-green-500/10 text-green-400 border-green-500/20",
+};
+
+const priorityColors: Record<string, string> = {
+  low: "bg-green-500/10 text-green-400 border-green-500/20",
+  medium: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+  high: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  critical: "bg-red-500/10 text-red-400 border-red-500/20",
+};
+
 interface Props {
   task: Task;
   isHighlighted?: boolean;
@@ -53,12 +66,22 @@ export default function TaskCard({
 
       <p className="text-zinc-400 mt-2 text-sm">{task.description}</p>
 
-      <div className="flex gap-3 mt-4 text-xs">
-        <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded-md">
+      <div className="mt-4 flex gap-3 text-xs">
+        <span
+          className={`rounded-md border px-2 py-1 capitalize ${
+            statusColors[task.status] ??
+            "border-zinc-500/20 bg-zinc-500/10 text-zinc-400"
+          }`}
+        >
           {task.status}
         </span>
 
-        <span className="px-2 py-1 bg-purple-500/10 text-purple-400 rounded-md">
+        <span
+          className={`rounded-md border px-2 py-1 capitalize ${
+            priorityColors[task.priority] ??
+            "border-zinc-500/20 bg-zinc-500/10 text-zinc-400"
+          }`}
+        >
           {task.priority}
         </span>
       </div>
