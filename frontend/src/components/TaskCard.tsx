@@ -1,6 +1,7 @@
 import type { Task } from "../types/task";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Link } from "react-router-dom";
 
 const statusColors: Record<string, string> = {
   pending: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
@@ -86,16 +87,28 @@ export default function TaskCard({
         </span>
       </div>
 
-      <div className="border-t border-zinc-800 mt-3 flex justify-end">
+      <div className="mt-3 flex justify-end gap-2 border-t border-zinc-800 pt-3">
+        <Link
+          to={`/tasks/${task.id}`}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+          className="p-1 text-xs text-green-300 hover:text-green-500"
+        >
+          View
+        </Link>
+
         <button
-          onPointerDown={(e) => e.stopPropagation()}
+          type="button"
+          onPointerDown={(event) => event.stopPropagation()}
           onClick={() => onEdit?.(task)}
           className="p-1 text-xs text-blue-300 hover:text-blue-500"
         >
           Edit
         </button>
+
         <button
-          onPointerDown={(e) => e.stopPropagation()}
+          type="button"
+          onPointerDown={(event) => event.stopPropagation()}
           onClick={() => onDelete?.(task)}
           className="p-1 text-xs text-gray-400 hover:text-red-400"
         >

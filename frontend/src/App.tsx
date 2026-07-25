@@ -7,6 +7,7 @@ import { ProjectProvider } from "./context/ProjectContext";
 import { AuthProvider } from "./context/AuthContext";
 import ProjectsPage from "./pages/ProjectsPage";
 import AppLayout from "./components/layout/AppLayout";
+import TaskDetailPage from "./pages/TaskDetailPage";
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
             >
               <Route path="/" element={<Dashboard />} />
               <Route path="/projects" element={<ProjectsPage />} />
+              <Route path="/tasks/:taskId" element={<TaskDetailPage />} />
             </Route>
 
           </Routes>

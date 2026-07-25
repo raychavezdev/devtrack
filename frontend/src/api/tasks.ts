@@ -11,6 +11,10 @@ export async function getTasks(projectId?: number): Promise<Task[]> {
   return fetchWithAuth(url);
 }
 
+export async function getTask(id: number): Promise<Task> {
+  return fetchWithAuth(`${BASE}${id}/`);
+}
+
 
 export async function createTask(task: {
   title: string;
