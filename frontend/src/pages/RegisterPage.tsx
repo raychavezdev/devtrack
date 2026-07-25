@@ -81,7 +81,10 @@ export default function RegisterPage() {
     <div className="flex items-center justify-center min-h-screen bg-linear-to-b from-zinc-950 to-zinc-900 text-zinc-100">
       <div className="w-full max-w-md">
         <div className="mb-4 text-center">
-          <h1 className="text-3xl font-bold tracking-tight mt-4">DevTrack</h1>
+          <h1 className="text-3xl font-bold tracking-tight mt-4">
+            {" "}
+            DevT<span className="text-indigo-500">ray</span>ck
+          </h1>
           <p className="text-zinc-400 my-2 text-sm">
             Create your account to start managing tasks
           </p>
@@ -199,12 +202,12 @@ export default function RegisterPage() {
             </Link>
           </p>
         </form>
-           {/* Footer */}
-      <p className="text-center text-zinc-500 text-xs my-6">
-        DevTrack — Task management for developers
-      </p>
+        {/* Footer */}
+        <p className="text-center text-zinc-500 text-xs my-6">
+          DevT<span className="text-indigo-500">ray</span>ck — Task management
+          for developers
+        </p>
       </div>
-   
     </div>
   );
 }

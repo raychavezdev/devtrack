@@ -21,7 +21,7 @@ export default function Header() {
             onClick={() => navigate("/")}
             className="text-2xl font-bold cursor-pointer"
           >
-            DevTrack
+            DevT<span className="text-indigo-500">ray</span>ck
           </h1>
 
           <div className="flex items-center gap-4 relative">

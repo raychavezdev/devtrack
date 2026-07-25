@@ -17,7 +17,7 @@ export default function LoginPage() {
 
     try {
       const data = await loginRequest(username, password);
-      login(data.access, data.refresh ,username);
+      login(data.access, data.refresh, username);
       navigate("/");
     } catch {
       setError("Invalid username or password");
@@ -29,7 +29,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo / Title */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">DevTrack</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {" "}
+            DevT<span className="text-indigo-500">ray</span>ck
+          </h1>
           <p className="text-zinc-400 text-sm mt-2">
             Manage your development tasks
           </p>
@@ -83,12 +86,12 @@ export default function LoginPage() {
               Register
             </a>
           </p>
-
         </form>
 
         {/* Footer */}
         <p className="text-center text-zinc-500 text-xs mt-6">
-          DevTrack — Task management for developers
+          DevT<span className="text-indigo-500">ray</span>ck — Task management
+          for developers
         </p>
       </div>
     </div>
