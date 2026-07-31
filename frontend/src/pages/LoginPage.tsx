@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
 import { loginRequest } from "../api/auth";
+import BrandLogo from "../components/BrandLogo";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -11,12 +13,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError("");
 
     try {
       const data = await loginRequest(username, password);
+
       login(data.access, data.refresh, username);
       navigate("/");
     } catch {
@@ -25,73 +28,95 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-linear-to-b from-zinc-950 to-zinc-900 text-zinc-100">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-b from-zinc-950 to-zinc-900 px-4 text-zinc-100">
       <div className="w-full max-w-md">
-        {/* Logo / Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">
-            {" "}
-            DevT<span className="text-indigo-500">ray</span>ck
-          </h1>
-          <p className="text-zinc-400 text-sm mt-2">
-            Manage your development tasks
-          </p>
+        <div className="mb-8 flex justify-center">
+          <BrandLogo showTagline />
         </div>
 
-        {/* Card */}
         <form
           onSubmit={handleSubmit}
-          className="bg-zinc-900 border border-zinc-800 shadow-xl rounded-2xl p-8"
+          className="rounded-2xl border border-zinc-800 bg-zinc-900 p-8 shadow-xl"
         >
-          <h2 className="text-lg font-semibold mb-6 text-center">
-            Sign in to your account
-          </h2>
+          <div className="mb-6 text-center">
+            <h1 className="text-xl font-semibold text-white">Welcome back</h1>
 
-          {/* Username */}
+            <p className="mt-2 text-sm text-zinc-400">
+              Sign in to continue organizing your projects.
+            </p>
+          </div>
+
           <div className="mb-4">
-            <label className="block text-sm text-zinc-400 mb-1">Username</label>
+            <label
+              htmlFor="username"
+              className="mb-1 block text-sm text-zinc-400"
+            >
+              Username
+            </label>
+
             <input
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Username"
+              id="username"
+              name="username"
+              type="text"
+              autoComplete="username"
+              required
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
+              placeholder="Enter your username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(event) => setUsername(event.target.value)}
             />
           </div>
 
-          {/* Password */}
           <div className="mb-5">
-            <label className="block text-sm text-zinc-400 mb-1">Password</label>
+            <label
+              htmlFor="password"
+              className="mb-1 block text-sm text-zinc-400"
+            >
+              Password
+            </label>
+
             <input
+              id="password"
+              name="password"
               type="password"
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoComplete="current-password"
+              required
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(event) => setPassword(event.target.value)}
             />
           </div>
 
-          {/* Error */}
           {error && (
-            <p className="text-red-400 text-sm mb-4 text-center">{error}</p>
+            <div
+              role="alert"
+              className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-center text-sm text-red-400"
+            >
+              {error}
+            </div>
           )}
 
-          {/* Button */}
-          <button className="w-full bg-blue-600 hover:bg-blue-700 transition-colors py-2.5 rounded-lg font-medium">
+          <button
+            type="submit"
+            className="w-full rounded-lg bg-indigo-600 py-2.5 font-medium text-white transition hover:bg-indigo-500"
+          >
             Sign in
           </button>
 
-          <p className="text-sm text-zinc-400 mt-4 text-center">
-            Don't have an account?{" "}
-            <a href="/register" className="text-blue-400 hover:underline">
-              Register
-            </a>
+          <p className="mt-5 text-center text-sm text-zinc-400">
+            Don&apos;t have an account?{" "}
+            <Link
+              to="/register"
+              className="font-medium text-indigo-400 transition hover:text-indigo-300 hover:underline"
+            >
+              Create one
+            </Link>
           </p>
         </form>
 
-        {/* Footer */}
-        <p className="text-center text-zinc-500 text-xs mt-6">
-          DevT<span className="text-indigo-500">ray</span>ck — Task management
-          for developers
+        <p className="mt-6 text-center text-xs text-zinc-500">
+          Plan. Build. Ship.
         </p>
       </div>
     </div>

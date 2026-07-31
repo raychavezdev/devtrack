@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { registerRequest, loginRequest } from "../api/auth";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
+import { loginRequest, registerRequest } from "../api/auth";
+import BrandLogo from "../components/BrandLogo";
 import { useAuth } from "../context/AuthContext";
 
 export default function RegisterPage() {
@@ -39,8 +41,8 @@ export default function RegisterPage() {
     return newErrors;
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
 
     const validationErrors = validateForm();
 
@@ -58,19 +60,28 @@ export default function RegisterPage() {
       const data = await loginRequest(username, password);
 
       login(data.access, data.refresh, username);
-
       navigate("/");
     } catch (err: any) {
       const backendErrors: Record<string, string> = {};
 
-      if (err.username) backendErrors.username = err.username[0];
-      if (err.email) backendErrors.email = err.email[0];
-      if (err.password) backendErrors.password = err.password[0];
+      if (err.username) {
+        backendErrors.username = err.username[0];
+      }
+
+      if (err.email) {
+        backendErrors.email = err.email[0];
+      }
+
+      if (err.password) {
+        backendErrors.password = err.password[0];
+      }
 
       if (Object.keys(backendErrors).length > 0) {
         setErrors(backendErrors);
       } else {
-        setErrors({ general: "Failed to register" });
+        setErrors({
+          general: "We could not create your account. Please try again.",
+        });
       }
     } finally {
       setLoading(false);
@@ -78,134 +89,184 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-linear-to-b from-zinc-950 to-zinc-900 text-zinc-100">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-b from-zinc-950 to-zinc-900 px-4 py-8 text-zinc-100">
       <div className="w-full max-w-md">
-        <div className="mb-4 text-center">
-          <h1 className="text-3xl font-bold tracking-tight mt-4">
-            {" "}
-            DevT<span className="text-indigo-500">ray</span>ck
-          </h1>
-          <p className="text-zinc-400 my-2 text-sm">
-            Create your account to start managing tasks
-          </p>
+        <div className="mb-8 flex justify-center">
+          <BrandLogo showTagline />
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-lg"
+          className="rounded-2xl border border-zinc-800 bg-zinc-900 p-8 shadow-xl"
         >
-          <h2 className="text-xl font-semibold mb-6 text-center">
-            Create Account
-          </h2>
+          <div className="mb-6 text-center">
+            <h1 className="text-xl font-semibold text-white">
+              Create your account
+            </h1>
+
+            <p className="mt-2 text-sm text-zinc-400">
+              Start organizing your development projects.
+            </p>
+          </div>
 
           {errors.general && (
-            <div className="mb-4 p-3 rounded bg-red-500/10 text-red-400 text-sm">
+            <div
+              role="alert"
+              className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400"
+            >
               {errors.general}
             </div>
           )}
 
           <div className="space-y-4">
-            {/* USERNAME */}
             <div>
-              <label className="text-sm text-zinc-400 block mb-1">
+              <label
+                htmlFor="username"
+                className="mb-1 block text-sm text-zinc-400"
+              >
                 Username
               </label>
+
               <input
-                className="w-full p-2 rounded bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Username"
+                id="username"
+                name="username"
+                type="text"
+                autoComplete="username"
+                required
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
+                placeholder="Choose a username"
                 value={username}
-                onChange={(e) => {
-                  setUsername(e.target.value);
-                  setErrors((prev) => ({ ...prev, username: "" }));
+                onChange={(event) => {
+                  setUsername(event.target.value);
+                  setErrors((previous) => ({
+                    ...previous,
+                    username: "",
+                  }));
                 }}
               />
+
               {errors.username && (
-                <p className="text-red-400 text-xs mt-1">• {errors.username}</p>
+                <p className="mt-1 text-xs text-red-400">{errors.username}</p>
               )}
             </div>
 
-            {/* EMAIL */}
             <div>
-              <label className="text-sm text-zinc-400 block mb-1">Email</label>
+              <label
+                htmlFor="email"
+                className="mb-1 block text-sm text-zinc-400"
+              >
+                Email
+              </label>
+
               <input
+                id="email"
+                name="email"
                 type="email"
-                className="w-full p-2 rounded bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Email"
+                autoComplete="email"
+                required
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
+                placeholder="you@example.com"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setErrors((prev) => ({ ...prev, email: "" }));
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  setErrors((previous) => ({
+                    ...previous,
+                    email: "",
+                  }));
                 }}
               />
+
               {errors.email && (
-                <p className="text-red-400 text-xs mt-1">• {errors.email}</p>
+                <p className="mt-1 text-xs text-red-400">{errors.email}</p>
               )}
             </div>
 
-            {/* PASSWORD */}
             <div>
-              <label className="text-sm text-zinc-400 block mb-1">
+              <label
+                htmlFor="password"
+                className="mb-1 block text-sm text-zinc-400"
+              >
                 Password
               </label>
+
               <input
+                id="password"
+                name="password"
                 type="password"
-                className="w-full p-2 rounded bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="••••••••"
+                autoComplete="new-password"
+                required
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
+                placeholder="At least 6 characters"
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setErrors((prev) => ({ ...prev, password: "" }));
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  setErrors((previous) => ({
+                    ...previous,
+                    password: "",
+                  }));
                 }}
               />
+
               {errors.password && (
-                <p className="text-red-400 text-xs mt-1">• {errors.password}</p>
+                <p className="mt-1 text-xs text-red-400">{errors.password}</p>
               )}
             </div>
 
-            {/* CONFIRM PASSWORD */}
             <div>
-              <label className="text-sm text-zinc-400 block mb-1">
-                Confirm Password
+              <label
+                htmlFor="confirm-password"
+                className="mb-1 block text-sm text-zinc-400"
+              >
+                Confirm password
               </label>
+
               <input
+                id="confirm-password"
+                name="confirmPassword"
                 type="password"
-                className="w-full p-2 rounded bg-zinc-800 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="••••••••"
+                autoComplete="new-password"
+                required
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
+                placeholder="Repeat your password"
                 value={confirmPassword}
-                onChange={(e) => {
-                  setConfirmPassword(e.target.value);
-                  setErrors((prev) => ({ ...prev, confirmPassword: "" }));
+                onChange={(event) => {
+                  setConfirmPassword(event.target.value);
+                  setErrors((previous) => ({
+                    ...previous,
+                    confirmPassword: "",
+                  }));
                 }}
               />
+
               {errors.confirmPassword && (
-                <p className="text-red-400 text-xs mt-1">
-                  • {errors.confirmPassword}
+                <p className="mt-1 text-xs text-red-400">
+                  {errors.confirmPassword}
                 </p>
               )}
             </div>
           </div>
 
           <button
+            type="submit"
             disabled={loading}
-            className="w-full mt-6 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400 transition py-2 rounded font-medium"
+            className="mt-6 w-full rounded-lg bg-indigo-600 py-2.5 font-medium text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Creating account..." : "Create account"}
           </button>
 
-          <p className="text-sm text-zinc-400 mt-6 text-center">
+          <p className="mt-6 text-center text-sm text-zinc-400">
             Already have an account?{" "}
             <Link
               to="/login"
-              className="text-blue-400 hover:text-blue-300 hover:underline"
+              className="font-medium text-indigo-400 transition hover:text-indigo-300 hover:underline"
             >
               Sign in
             </Link>
           </p>
         </form>
-        {/* Footer */}
-        <p className="text-center text-zinc-500 text-xs my-6">
-          DevT<span className="text-indigo-500">ray</span>ck — Task management
-          for developers
+
+        <p className="mt-6 text-center text-xs text-zinc-500">
+          Plan. Build. Ship.
         </p>
       </div>
     </div>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 72" role="img" aria-labelledby="title desc">
+<title id="title">DevTrayck</title><desc id="desc">Logo horizontal de DevTrayck.</desc>
+<defs><linearGradient id="g" x1="8" y1="6" x2="60" y2="66" gradientUnits="userSpaceOnUse"><stop stop-color="#6366F1"/><stop offset="1" stop-color="#4F46E5"/></linearGradient></defs>
+<rect x="6" y="6" width="60" height="60" rx="16" fill="#09090B"/><rect x="9" y="9" width="54" height="54" rx="13" fill="none" stroke="url(#g)" stroke-width="4"/>
+<path d="M9 24h54" stroke="url(#g)" stroke-width="4"/><circle cx="19" cy="16.5" r="2.2" fill="#09090B"/><circle cx="27" cy="16.5" r="2.2" fill="#09090B"/><circle cx="35" cy="16.5" r="2.2" fill="#09090B"/>
+<path d="M22 43 31 52 50 32" fill="none" stroke="url(#g)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="82" y="47" font-family="Inter,ui-sans-serif,system-ui,sans-serif" font-size="38" font-weight="700" letter-spacing="-1.2" fill="#F4F4F5">DevT</text>
+<text x="174" y="47" font-family="Inter,ui-sans-serif,system-ui,sans-serif" font-size="38" font-weight="700" letter-spacing="-1.2" fill="#6366F1">ray</text>
+<text x="231" y="47" font-family="Inter,ui-sans-serif,system-ui,sans-serif" font-size="38" font-weight="700" letter-spacing="-1.2" fill="#F4F4F5">ck</text>
+</svg>
