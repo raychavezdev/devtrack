@@ -5,6 +5,9 @@ backend/db.sqlite3
 **/__pycache__/
 *.py[cod]
 
+# Django collected static files
+backend/staticfiles/
+
 # Environment variables
 .env
 .env.*
