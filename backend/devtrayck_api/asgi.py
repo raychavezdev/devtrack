@@ -1,5 +1,5 @@
 """
-ASGI config for devtrack_api project.
+ASGI config for devtrayck_api project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,9 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'devtrack_api.settings')
+os.environ.setdefault(
+    "DJANGO_SETTINGS_MODULE",
+    "devtrayck_api.settings",
+)
 
 application = get_asgi_application()
