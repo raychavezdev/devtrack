@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import TaskCard from "../components/TaskCard";
 import TaskModal from "../components/TaskModal";
 import ConfirmModal from "../components/ConfirmModal";
 import type { Task } from "../types/task";
 import { getTasks, updateTask, deleteTask } from "../api/tasks";
-import { useProject } from "../context/ProjectContext";
+import { useProjects } from "../hooks/useProjects";
 
 import {
   DndContext,
@@ -32,7 +32,7 @@ interface ColumnProps {
 const columns = ["pending", "progress", "done"];
 
 function Dashboard() {
-  const { activeProject } = useProject();
+  const { activeProject } = useProjects();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,11 +41,33 @@ function Dashboard() {
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
-  const [recentlyMovedTaskId, setRecentlyMovedTaskId] = useState<number | null>(null);
+  const [recentlyMovedTaskId, setRecentlyMovedTaskId] = useState<number | null>(
+    null,
+  );
 
   const pendingTasks = tasks.filter((t) => t.status === "pending");
   const progressTasks = tasks.filter((t) => t.status === "progress");
   const doneTasks = tasks.filter((t) => t.status === "done");
+
+  const fetchTasks = useCallback(async () => {
+    if (!activeProject) {
+      setTasks([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const data = await getTasks();
+
+      setTasks(data.filter((task) => task.project === activeProject.id));
+    } catch (error) {
+      console.error("Failed to load tasks:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeProject]);
 
   function openCreateModal() {
     setEditingTask(null);
@@ -149,28 +171,13 @@ function Dashboard() {
 
       setRecentlyMovedTaskId(activeId);
       setTimeout(() => setRecentlyMovedTaskId(null), 1000);
-
     } catch (error) {
       console.error(error);
-      fetchTasks();
+      void fetchTasks();
     }
 
     setActiveTask(null);
   }
-
-  const fetchTasks = async () => {
-    if (!activeProject) return;
-
-    setLoading(true);
-    try {
-      const data = await getTasks();
-      setTasks(data.filter((t) => t.project === activeProject.id));
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   async function confirmDelete() {
     if (!taskToDelete) return;
@@ -186,8 +193,8 @@ function Dashboard() {
   }
 
   useEffect(() => {
-    fetchTasks();
-  }, [activeProject]);
+    void fetchTasks();
+  }, [fetchTasks]);
 
   useEffect(() => {
     if (!successMessage) return;
@@ -327,7 +334,7 @@ function Dashboard() {
         task={editingTask}
         onClose={closeModal}
         onSaved={(message) => {
-          fetchTasks();
+          void fetchTasks();
           setSuccessMessage(message);
         }}
       />

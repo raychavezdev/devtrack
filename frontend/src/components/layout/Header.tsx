@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { useProject } from "../../context/ProjectContext";
+import { useAuth } from "../../hooks/useAuth";
+import { useProjects } from "../../hooks/useProjects";
 import ProjectModal from "../ProjectModal";
 import BrandLogo from "../BrandLogo";
 
 export default function Header() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { projects, activeProject, setActiveProject } = useProject();
+  const { projects, activeProject, setActiveProject } = useProjects();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [projectMenuOpen, setProjectMenuOpen] = useState(false);
   const [projectModalOpen, setProjectModalOpen] = useState(false);

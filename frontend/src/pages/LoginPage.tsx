@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { loginRequest } from "../api/auth";
 import BrandLogo from "../components/BrandLogo";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 export default function LoginPage() {
   const { login } = useAuth();

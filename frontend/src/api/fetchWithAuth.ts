@@ -2,9 +2,9 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export const fetchWithAuth = async (
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ) => {
-  let token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
   const makeRequest = async (accessToken: string | null) => {
     const headers = {
@@ -20,7 +20,6 @@ export const fetchWithAuth = async (
   };
 
   let response = await makeRequest(token);
-
 
   if (response.status === 401) {
     const refresh = localStorage.getItem("refresh");
@@ -46,12 +45,10 @@ export const fetchWithAuth = async (
 
       const data = await refreshRes.json();
 
-      
       localStorage.setItem("token", data.access);
 
-      
       response = await makeRequest(data.access);
-    } catch (error) {
+    } catch {
       handleLogout();
       return;
     }
@@ -68,7 +65,6 @@ export const fetchWithAuth = async (
 
   return response.json();
 };
-
 
 function handleLogout() {
   localStorage.removeItem("token");

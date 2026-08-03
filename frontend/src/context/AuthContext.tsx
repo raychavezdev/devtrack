@@ -1,63 +1,90 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { useState } from "react";
+import type { ReactNode } from "react";
+import {
+  isDemoModeEnabled,
+  startDemoMode,
+  stopDemoMode,
+} from "../demo/demoStorage";
+import { AuthContext } from "./authContextDefinition";
 
-interface AuthContextType {
-  token: string | null;
-  user: string | null;
-  login: (access: string, refresh: string, username: string) => void;
-  logout: () => void;
-  loading: boolean;
+function getInitialToken(): string | null {
+  return localStorage.getItem("token");
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+function getInitialDemoMode(): boolean {
+  return !localStorage.getItem("token") && isDemoModeEnabled();
+}
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+function getInitialUser(): string | null {
+  const storedToken = localStorage.getItem("token");
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("username");
+  if (storedToken) {
+    return localStorage.getItem("username");
+  }
 
-    if (storedToken) {
-      setToken(storedToken);
-      setUser(storedUser);
-    }
+  if (isDemoModeEnabled()) {
+    return "Demo User";
+  }
 
-    setLoading(false);
-  }, []);
+  return null;
+}
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [token, setToken] = useState<string | null>(getInitialToken);
+  const [user, setUser] = useState<string | null>(getInitialUser);
+  const [isDemo, setIsDemo] = useState<boolean>(getInitialDemoMode);
 
   const login = (access: string, refresh: string, username: string) => {
+    stopDemoMode();
+
     localStorage.setItem("token", access);
     localStorage.setItem("refresh", refresh);
     localStorage.setItem("username", username);
 
     setToken(access);
     setUser(username);
+    setIsDemo(false);
+  };
+
+  const startDemo = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("refresh");
+    localStorage.removeItem("username");
+    localStorage.removeItem("activeProjectId");
+
+    startDemoMode();
+
+    setToken(null);
+    setUser("Demo User");
+    setIsDemo(true);
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("refresh");
     localStorage.removeItem("username");
+    localStorage.removeItem("activeProjectId");
+
+    stopDemoMode();
 
     setToken(null);
     setUser(null);
+    setIsDemo(false);
   };
 
   return (
-    <AuthContext.Provider value={{ token, user, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        token,
+        user,
+        isDemo,
+        login,
+        startDemo,
+        logout,
+        loading: false,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error("useAuth must be used inside AuthProvider");
-  }
-
-  return context;
 };

@@ -3,7 +3,18 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { loginRequest, registerRequest } from "../api/auth";
 import BrandLogo from "../components/BrandLogo";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
+
+interface RegisterBackendError {
+  username?: string[];
+  email?: string[];
+  password?: string[];
+  detail?: string;
+}
+
+function isRegisterBackendError(error: unknown): error is RegisterBackendError {
+  return typeof error === "object" && error !== null;
+}
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -61,19 +72,25 @@ export default function RegisterPage() {
 
       login(data.access, data.refresh, username);
       navigate("/");
-    } catch (err: any) {
+    } catch (error: unknown) {
       const backendErrors: Record<string, string> = {};
 
-      if (err.username) {
-        backendErrors.username = err.username[0];
-      }
+      if (isRegisterBackendError(error)) {
+        if (error.username?.[0]) {
+          backendErrors.username = error.username[0];
+        }
 
-      if (err.email) {
-        backendErrors.email = err.email[0];
-      }
+        if (error.email?.[0]) {
+          backendErrors.email = error.email[0];
+        }
 
-      if (err.password) {
-        backendErrors.password = err.password[0];
+        if (error.password?.[0]) {
+          backendErrors.password = error.password[0];
+        }
+
+        if (Object.keys(backendErrors).length === 0 && error.detail) {
+          backendErrors.general = error.detail;
+        }
       }
 
       if (Object.keys(backendErrors).length > 0) {
@@ -133,7 +150,8 @@ export default function RegisterPage() {
                 type="text"
                 autoComplete="username"
                 required
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
+                disabled={loading}
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-60"
                 placeholder="Choose a username"
                 value={username}
                 onChange={(event) => {
@@ -164,7 +182,8 @@ export default function RegisterPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
+                disabled={loading}
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-60"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(event) => {
@@ -195,7 +214,8 @@ export default function RegisterPage() {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
+                disabled={loading}
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-60"
                 placeholder="At least 6 characters"
                 value={password}
                 onChange={(event) => {
@@ -226,7 +246,8 @@ export default function RegisterPage() {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
+                disabled={loading}
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-60"
                 placeholder="Repeat your password"
                 value={confirmPassword}
                 onChange={(event) => {
@@ -249,8 +270,15 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-6 w-full rounded-lg bg-indigo-600 py-2.5 font-medium text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 py-2.5 font-medium text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
+            {loading && (
+              <span
+                aria-hidden="true"
+                className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+              />
+            )}
+
             {loading ? "Creating account..." : "Create account"}
           </button>
 

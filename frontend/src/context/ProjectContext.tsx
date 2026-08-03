@@ -1,32 +1,45 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { useAuth } from "./AuthContext";
+
 import { getProjects } from "../api/projects";
 import type { Project } from "../types/project";
-
-interface ProjectContextType {
-  projects: Project[];
-  activeProject: Project | null;
-  setActiveProject: (project: Project | null) => void;
-  fetchProjects: () => Promise<void>;
-};
-
-const ProjectContext = createContext<ProjectContextType>({
-  projects: [],
-  activeProject: null,
-  setActiveProject: () => {},
-  fetchProjects: async () => {},
-});
+import { useAuth } from "../hooks/useAuth";
+import { ProjectContext } from "./projectContextDefinition";
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
-  const { token } = useAuth();
+  const { token, isDemo } = useAuth();
 
   const [projects, setProjects] = useState<Project[]>([]);
-  const [activeProject, _setActiveProject] = useState<Project | null>(null);
+  const [activeProject, setActiveProjectState] = useState<Project | null>(null);
 
+  const fetchProjects = useCallback(async () => {
+    const data = await getProjects();
+
+    setProjects(data);
+
+    const storedProjectId = Number(localStorage.getItem("activeProjectId"));
+
+    const storedProject = data.find(
+      (project) => project.id === storedProjectId,
+    );
+
+    setActiveProjectState(storedProject ?? data[0] ?? null);
+  }, []);
+
+  useEffect(() => {
+    if (!token && !isDemo) {
+      return;
+    }
+
+    const loadProjects = async () => {
+      await fetchProjects();
+    };
+
+    void loadProjects();
+  }, [token, isDemo, fetchProjects]);
 
   const setActiveProject = (project: Project | null) => {
-    _setActiveProject(project);
+    setActiveProjectState(project);
 
     if (project) {
       localStorage.setItem("activeProjectId", project.id.toString());
@@ -34,41 +47,6 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem("activeProjectId");
     }
   };
-
-  const fetchProjects = async () => {
-    if (!token) return;
-
-    try {
-      const data = await getProjects();
-      setProjects(data);
-
-      const storedId = localStorage.getItem("activeProjectId");
-
-      
-      if (storedId) {
-        const found = data.find((p) => p.id === Number(storedId));
-
-        if (found) {
-          _setActiveProject(found);
-          return;
-        }
-      }
-
-      
-      if (data.length > 0) {
-        setActiveProject(data[0]);
-      } else {
-        setActiveProject(null);
-      }
-
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    fetchProjects();
-  }, [token]);
 
   return (
     <ProjectContext.Provider
@@ -83,5 +61,3 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     </ProjectContext.Provider>
   );
 };
-
-export const useProject = () => useContext(ProjectContext);
